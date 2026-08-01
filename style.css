@@ -228,6 +228,7 @@ body{
     overflow-y:auto;
     border-top-left-radius:12px;
     overflow:hidden;
+    padding:22px 22px 0;
 }
 
 .content::-webkit-scrollbar{
@@ -770,4 +771,74 @@ i{
     height:100%;
     background:#fff;
     border-radius:999px;
+}
+
+.quick-links{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin:20px 0 35px;
+}
+
+.quick-card{
+    display:flex;
+    align-items:center;
+    background:#2a2a2a;
+    border-radius:6px;
+    overflow:hidden;
+    height:60px;
+    cursor:pointer;
+    transition:0.25s ease;
+}
+
+.quick-card:hover{
+    background:#3a3a3a;
+}
+
+.quick-card img{
+    width:60px;
+    height:60px;
+    object-fit:cover;
+    background:#444;       /* Placeholder until you add images */
+}
+
+.quick-card span{
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    padding:0 15px;
+    line-height:1.3;
+}
+
+@media(max-width:1200px){
+    .quick-links{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:700px){
+    .quick-links{
+        grid-template-columns:1fr;
+    }
+}
+
+.app-logo{
+    width:52px;
+    height:52px;
+    border-radius:14px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.app-logo img{
+    width:42px;
+    height:42px;
+    object-fit:contain;
+}
+
+.app-logo:hover{
+    transform:scale(1.08);
 }
