@@ -226,8 +226,8 @@ body{
     flex:1;
     background:#121212;
     overflow-y:auto;
+    overflow-x:hidden;
     border-top-left-radius:12px;
-    overflow:hidden;
     padding:22px 22px 0;
 }
 
@@ -458,7 +458,7 @@ i{
 .artist-banner{
     width:100%;
     height:240px;
-    object-fit:cover;
+    object-fit:contain;
     display:block;
 }
 
@@ -590,7 +590,7 @@ i{
     width:56px;
     height:56px;
     border-radius:8px;
-    object-fit:cover;
+    object-fit:contain;
 }
 
 .queue-item h4{
@@ -629,7 +629,7 @@ i{
     width:56px;
     height:56px;
     border-radius:8px;
-    object-fit:cover;
+    object-fit:contain;
 }
 
 .track-details{
@@ -841,4 +841,110 @@ i{
 
 .app-logo:hover{
     transform:scale(1.08);
+}
+
+
+
+/* ================= RECOMMENDATION SECTION ================= */
+
+.popular-header h2,
+.recents-header h2,
+.artist-header h2{
+    font-size:24px;
+    font-weight:700;
+    color:#fff;
+}
+.slider{
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    padding-bottom:10px;
+    scrollbar-width:none;
+}
+
+.slider::-webkit-scrollbar{
+    display:none;
+}
+
+.card{
+    min-width:180px;
+    background:#181818;
+    border-radius:12px;
+    padding:14px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.card:hover{
+    background:#282828;
+}
+
+.card img{
+    width:100%;
+    height:auto;
+    border-radius:10px;
+    object-fit:cover;
+}
+
+.card h3{
+    margin-top:12px;
+    font-size:16px;
+    color:#fff;
+}
+
+.card p{
+    margin-top:6px;
+    font-size:13px;
+    color:#b3b3b3;
+    line-height:1.4;
+}
+
+.popular{
+    margin-top:20px;
+    margin-bottom:45px;
+}
+
+.popular-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+
+.recents{
+    margin-top:20px;
+    margin-bottom:45px;
+}
+.recents-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+
+.artist{
+    margin-top:20px;
+    margin-bottom:45px;
+}
+.artist-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.popular-header a,
+.recents-header a,
+.artist-header a{
+    color:#b3b3b3;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+}
+.popular-header a:hover,
+.recents-header a:hover,
+.artist-header a:hover{
+    color:#fff;
 }
