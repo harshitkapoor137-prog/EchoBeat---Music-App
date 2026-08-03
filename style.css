@@ -899,12 +899,11 @@ i{
 }
 .slider{
     display:flex;
-    gap:18px;
+    gap:24px;
     overflow-x:auto;
-    padding-bottom:10px;
+    padding:10px 0 15px;
     scrollbar-width:none;
 }
-
 .slider::-webkit-scrollbar{
     display:none;
 }
@@ -994,4 +993,59 @@ i{
 .podcasts{
     margin-top:20px;
     margin-bottom:45px;
+}
+.podcast-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:25px;
+}
+
+.podcast-card{
+    background:#242424;
+    border-radius:16px;
+    padding:18px;
+    transition:.3s;
+}
+
+.podcast-card:hover{
+    background:#2f2f2f;
+    transform:translateY(-5px);
+}
+
+.podcast-top{
+    display:flex;
+    gap:16px;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.podcast-cover{
+    width:70px;
+    height:70px;
+    border-radius:10px;
+    object-fit:cover;
+}
+
+.podcast-info h3{
+    font-size:24px;
+    margin-bottom:8px;
+}
+
+.podcast-info span{
+    color:#b3b3b3;
+    font-size:15px;
+}
+
+.episode-image{
+    width:100%;
+    height:280px;
+    object-fit:cover;
+    border-radius:12px;
+    margin-bottom:18px;
+}
+
+.episode-desc{
+    color:#d6d6d6;
+    font-size:15px;
+    line-height:1.7;
 }
