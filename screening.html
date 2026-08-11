@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+<meta http-equiv="refresh" content="3;url=index.html">
+</head>
+<style>
+    body{
+        background-color: beige;
+        background-image: url("https://static.vecteezy.com/system/resources/previews/007/229/179/non_2x/young-men-back-view-online-job-search-using-computer-app-job-search-career-search-and-recruitment-ideas-photo.jpg");
+    }
+ .container{
+    width: 100px;
+    height:80px;
+    margin:auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.square{
+    width:60px;
+    height:60px;
+    border:8px solid darkslategray;
+    border-top:8px solid beige;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+  .load{
+        width:500px;
+        margin:Auto;
+        font-style: italic;
+        font-color: darkslategray;
+    
+        
+    }
+@keyframes spin{
+    from{
+        transform:rotate(0deg);
+    }
+    to{
+        transform:rotate(360deg);
+    }
+}
+</style>
+<body>
+    <div class="container">
+        <div class="square">
+        </div>
+
+    </div>
+    <div class="load">Loading..</div>
+</body>
+</html>

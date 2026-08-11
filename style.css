@@ -4,7 +4,78 @@
     box-sizing:border-box;
 }
 
-html,
+
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    background-color: #000; ;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+
+    animation: hideLoading 3s forwards;
+}
+
+.loader {
+    width: 60px;
+    height: 60px;
+
+    border: 8px solid #1DB954;
+    border-top: 8px solid #000;
+
+    border-radius: 50%;
+
+    animation: spin 1s linear infinite;
+}
+
+#loading-screen p {
+    color: white;
+    font-size: 20px;
+    font-style: italic;
+    margin-top: 15px;
+}
+
+
+/* Loader rotation */
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* Remove loading screen after 3 seconds */
+
+@keyframes hideLoading {
+    0% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    90% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
 body{
     width:100%;
     height:100%;
