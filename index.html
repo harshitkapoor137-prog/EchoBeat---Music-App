@@ -9,7 +9,7 @@
 
     <title>EchoBeat</title>
 
-    <link rel="icon" type="image/png" href="EchoBeat.png">
+    <link rel="icon" type="image/png" href="image/EchoBeat.png">
 
     <link rel="stylesheet" href="style.css">
 
@@ -31,54 +31,180 @@
         <p>Loading EchoBeat...</p>
     </div>
 
-    <!-- Your actual website -->
-    <div class="app">
+    <!-- Login Page (everything the user sees before logging in lives inside this wrapper) -->
+    <div id="loginPage">
+
+        <header>
+            <div class="logo">
+                <img src="image/EchoBeat.png" alt="EchoBeat Logo">
+                <span>EchoBeat</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="card">
+
+                <h1>Log in to EchoBeat</h1>
+
+                <div class="social-buttons">
+
+                    <button type="button" class="social-btn" data-provider="Google">
+                        <span class="social-icon" aria-hidden="true">
+                            <svg viewBox="0 0 48 48" width="20" height="20">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.02l7.73 6c4.51-4.18 7.09-10.36 7.09-17.49z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.61.27-3.16.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.9.94 7.6 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                        </span>
+                        Continue with Google
+                    </button>
+
+                    <button type="button" class="social-btn" data-provider="Apple">
+                        <span class="social-icon" aria-hidden="true">
+                            <svg viewBox="0 0 384 512" width="18" height="18" fill="#ffffff">
+                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 0 184.5 0 273.6c0 26.4 4.8 53.7 14.5 81.9 12.9 37.4 59.5 129 108.1 127.5 25.4-.6 43.3-18 76.4-18 32.1 0 48.7 18 76.4 18 49 .7 91.1-83 103.9-120.5-66-31.2-60.6-91.5-60.6-93.8zM255.8 88.8c25.9-30.8 23.6-58.9 22.9-69-23 1.3-49.6 15.7-64.9 33.4-16.9 18.9-26.8 42.4-24.7 68.9 25 1.9 47.9-12.6 66.7-33.3z"/>
+                            </svg>
+                        </span>
+                        Continue with Apple
+                    </button>
+
+                    <button type="button" class="social-btn" data-provider="Facebook">
+                        <span class="social-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="#1877F2">
+                                <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/>
+                            </svg>
+                        </span>
+                        Continue with Facebook
+                    </button>
+
+                </div>
+
+                <div class="divider">or</div>
+
+                <form id="loginForm" novalidate>
+
+                    <div class="field">
+                        <label for="username">Gmail address</label>
+
+                        <input
+                            type="email"
+                            id="username"
+                            name="username"
+                            autocomplete="email"
+                            placeholder="yourname@gmail.com"
+                            inputmode="email"
+                        >
+
+                        <div class="error-msg" id="usernameError">
+                            <img src="image/error.png" alt="Error">
+                            <span>Please enter your Gmail address.</span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="password">Password</label>
+
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                autocomplete="current-password"
+                                placeholder="Password"
+                            >
+
+                            <button type="button" class="toggle-pass" id="togglePass">
+                                Show
+                            </button>
+                        </div>
+
+                        <div class="error-msg" id="passwordError">
+                            <img src="image/error.png" alt="Error">
+                            <span>Please enter your password.</span>
+                        </div>
+                    </div>
+
+                    <div class="remember-row">
+                        <input type="checkbox" class="checkbox" id="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        Log in
+                    </button>
+
+                    <a href="#" class="forgot-link" id="forgotLink">
+                        Forgot your password?
+                    </a>
+
+                </form>
+
+            </div>
+        </main>
+
+        <footer>
+            <p>
+                Don't have an account?
+                <a href="#" id="signupLink">Sign up for EchoBeat</a>
+            </p>
+        </footer>
+
+        <div class="toast" id="toast">
+            Logged in successfully
+        </div>
+
+    </div>
+    <!-- /#loginPage -->
+
+    <!-- Main App (hidden until login succeeds) -->
+    <div class="app" id="mainApp">
 
         <aside class="sidebar">
 
-    <div class="top-icons">
+            <div class="top-icons">
 
-        <div class="dot-menu">
-            <i class="fa-solid fa-ellipsis"></i>
-        </div>
+                <div class="dot-menu">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </div>
 
-        <div class="nav-icon">
-            <i class="fa-solid fa-house"></i>
-        </div>
+                <div class="nav-icon">
+                    <i class="fa-solid fa-house"></i>
+                </div>
 
-        <div class="nav-icon">
-            <i class="fa-solid fa-magnifying-glass"></i>
-        </div>
+                <div class="nav-icon">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
 
-        <div class="divider"></div>
+                <div class="divider"></div>
 
-        <div class="nav-icon">
-            <i class="fa-solid fa-plus"></i>
-        </div>
+                <div class="nav-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
 
-    </div>
+            </div>
 
-    <div class="library">
+            <div class="library">
 
-        <div class="library-icon active">
-            <i class="fa-solid fa-bookmark"></i>
-        </div>
+                <div class="library-icon active">
+                    <i class="fa-solid fa-bookmark"></i>
+                </div>
 
-        <img src="Liked.jpg" class="playlist">
+                <img src="image/Liked.jpg" class="playlist">
 
-        <img src="MyPlaylist.jpg" class="playlist">
+                <img src="image/MyPlaylist.jpg" class="playlist">
 
-        <img src="Pop.jpg" class="playlist">
+                <img src="image/Pop.jpg" class="playlist">
 
-        <img src="Techno.jpg" class="playlist">
+                <img src="image/Techno.jpg" class="playlist">
 
-        <img src="Shuffle.jpg" class="playlist">
+                <img src="image/Shuffle.jpg" class="playlist">
 
-        <img src="Thinking.jpg" class="playlist">
+                <img src="image/Thinking.jpg" class="playlist">
 
-    </div>
+            </div>
 
-</aside>
+        </aside>
 
         <main class="main">
 
@@ -122,8 +248,21 @@
                         <i class="fa-solid fa-user-group"></i>
                     </div>
 
-                    <div class="profile">
-                        EB
+                    <div class="profile-wrap" id="profileWrap">
+                        <button class="profile" id="profileBtn" aria-haspopup="true" aria-expanded="false">EB</button>
+
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <button type="button" data-action="profile">
+                                <i class="fa-regular fa-user"></i> Profile
+                            </button>
+                            <button type="button" data-action="settings">
+                                <i class="fa-solid fa-gear"></i> Account Settings
+                            </button>
+                            <hr>
+                            <button type="button" data-action="logout">
+                                <i class="fa-solid fa-right-from-bracket"></i> Sign out
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -133,223 +272,353 @@
             <div class="workspace">
 
                 <section class="content">
+
+                  <div id="homeView" class="page-view">
+
                     <div class="quick-links">
 
-    <div class="quick-card">
-        <img src="MyPlaylist.jpg">
-        <span>My Playlist #7</span>
-    </div>
+                        <div class="quick-card" data-playlist="myplaylist7">
+                            <img src="image/MyPlaylist.jpg">
+                            <span>My Playlist #7</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Shuffle.jpg">
-        <span>Shuffle & Vibe</span>
-    </div>
+                        <div class="quick-card" data-playlist="shuffle">
+                            <img src="image/Shuffle.jpg">
+                            <span>Shuffle & Vibe</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Techno.jpg">
-        <span>TechnoMix</span>
-    </div>
+                        <div class="quick-card" data-playlist="technomix">
+                            <img src="image/Techno.jpg">
+                            <span>TechnoMix</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Liked.jpg">
-        <span>Liked Songs</span>
-    </div>
+                        <div class="quick-card" data-playlist="liked">
+                            <img src="image/Liked.jpg">
+                            <span>Liked Songs</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Pop.jpg">
-        <span>Pop-Party</span>
-    </div>
+                        <div class="quick-card" data-playlist="poppart">
+                            <img src="image/Pop.jpg">
+                            <span>Pop-Party</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Thinking.jpg" >
-        <span>Thinking Out Loud</span>
-    </div>
+                        <div class="quick-card" data-playlist="thinking">
+                            <img src="image/Thinking.jpg" >
+                            <span>Thinking Out Loud</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Notion.jpg">
-        <span>Notion</span>
-    </div>
+                        <div class="quick-card" data-playlist="notion">
+                            <img src="image/Notion.jpg">
+                            <span>Notion</span>
+                        </div>
 
-    <div class="quick-card">
-        <img src="Ishq.jpg">
-        <span>Ishq Di<br>Baajiyaan Radio</span>
-    </div>
+                        <div class="quick-card" data-playlist="ishq">
+                            <img src="image/Ishq.jpg">
+                            <span>Ishq Di<br>Baajiyaan Radio</span>
+                        </div>
 
-</div>
+                    </div>
 
-           <!-- Workspace to be used by teammates -->
-    <section class="popular">
-        <div class="popular-header">
-            <h3>Popular Hits</h3>
-            <a href="#">Show All</a>
-        </div>
+                    <!-- Workspace to be used by teammates -->
+                    <section class="popular">
+                        <div class="popular-header">
+                            <h3>Popular Hits</h3>
+                            <a href="#">Show All</a>
+                        </div>
 
-        <div class="slider">
-            <div class="card">
-                <img src="trending.jpg" alt="Trending">
-                <h3>Trending in INDIA</h3>
-                <p>Every track you're listening/should be listening to</p>
-            </div>
-            <div class="card">
-            <img src="ariana album.jpg" alt="ariana">
-            <h3>petal</h3>
-            <p>Album - Ariana Grande</p>
-        </div>
+                        <div class="slider">
+                            <div class="card">
+                                <img src="image/trending.jpg" alt="Trending">
+                                <h3>Trending in INDIA</h3>
+                                <p>Every track you're listening/should be listening to</p>
+                            </div>
+                            <div class="card">
+                                <img src="image/ariana album.jpg" alt="ariana">
+                                <h3>petal</h3>
+                                <p>Album - Ariana Grande</p>
+                            </div>
 
-        <div class="card">
-            <img src="grwm.jpg" alt="grwm">
-            <h3>#GRWM Hindi</h3>
-            <p>Get ready because you're the main character.</p>
-        </div>
+                            <div class="card">
+                                <img src="image/grwm.jpg" alt="grwm">
+                                <h3>#GRWM Hindi</h3>
+                                <p>Get ready because you're the main character.</p>
+                            </div>
 
-        <div class="card">
-            <img src="atif album.jpg" alt="atif album">
-            <h3>Subah Aye Na</h3>
-            <p>Latest Release - Atif Asalam</p>
-        </div>
+                            <div class="card">
+                                <img src="image/atif album.jpg" alt="atif album">
+                                <h3>Subah Aye Na</h3>
+                                <p>Latest Release - Atif Asalam</p>
+                            </div>
 
-        <div class="card">
-            <img src="Happy vibes.jpg" alt="happy">
-            <h3>Happy Vibes</h3>
-            <p>Bright, Sunny, Catchy tunes.</p>
-        </div>
+                            <div class="card">
+                                <img src="image/Happy vibes.jpg" alt="happy">
+                                <h3>Happy Vibes</h3>
+                                <p>Bright, Sunny, Catchy tunes.</p>
+                            </div>
+                        </div>
+                    </section>
 
-        </div>
-    </section>
+                    <section class="recents">
+                        <div class="recents-header">
+                            <h3>Recents</h3>
+                            <a href="#">Show All</a>
+                        </div>
 
-     <section class="recents">
-        <div class="recents-header">
-            <h3>Recents</h3>
-            <a href="#">Show All</a>
-        </div>
+                        <div class="slider">
+                            <div class="card">
+                                <img src="image/All the Stars.jpg" alt="All the Stars">
+                                <h3>All the Stars</h3>
+                                <p>Kendrick Lamar - SZA</p>
+                            </div>
+                            <div class="card">
+                                <img src="image/Starboy.jpg" alt="Starboy">
+                                <h3>Starboy</h3>
+                                <p>The Weeknd</p>
+                            </div>
 
-        <div class="slider">
-            <div class="card">
-                <img src="All the Stars.jpg" alt="All the Stars">
-                <h3>All the Stars</h3>
-                <p>Kendrick Lamar - SZA</p>
-            </div>
-            <div class="card">
-            <img src="Starboy.jpg" alt="Starboy">
-            <h3>Starboy</h3>
-            <p>The Weeknd</p>
-        </div>
+                            <div class="card">
+                                <img src="image/Blinding lights.jpg" alt="Blinding Lights">
+                                <h3>Blinding Lights</h3>
+                                <p>The Weeknd</p>
+                            </div>
 
-        <div class="card">
-            <img src="Blinding lights.jpg" alt="Blinding Lights">
-            <h3>Blinding Lights</h3>
-            <p>The Weeknd</p>
-        </div>
+                            <div class="card">
+                                <img src="image/Save your tears.jpg" alt="Save Your Tears">
+                                <h3>Save Your Tears</h3>
+                                <p>The Weeknd</p>
+                            </div>
 
-        <div class="card">
-            <img src="Save your tears.jpg" alt="Save Your Tears">
-            <h3>Save Your Tears</h3>
-            <p>The Weeknd</p>
-        </div>
+                            <div class="card">
+                                <img src="image/Less than Zero.jpg" alt="Less Than Zero">
+                                <h3>Less Than Zero</h3>
+                                <p>The Weeknd</p>
+                            </div>
+                        </div>
+                    </section>
 
-        <div class="card">
-            <img src="Less than Zero.jpg" alt="Less Than Zero">
-            <h3>Less Than Zero</h3>
-            <p>The Weeknd</p>
-        </div>
+                    <section class="artist">
+                        <div class="artist-header">
+                            <h3>Artist Radio</h3>
+                            <a href="#">Show All</a>
+                        </div>
 
-        </div>
-    </section>
+                        <div class="slider">
+                            <div class="card">
+                                <img src="image/Arjit singh.jpeg" alt="Arjit Singh">
+                                <h3>Arijit Singh Radio</h3>
+                                <p>with Jeet Gannguli, Pritam and more</p>
+                            </div>
+                            <div class="card">
+                                <img src="image/Diljit.jpeg" alt="Diljit Dosanjh">
+                                <h3>Diljit Dosanjh Radio</h3>
+                                <p>with Harrdy Sandhu, Sidhu Moose Wala and more</p>
+                            </div>
 
-    <section class="artist">
-        <div class="artist-header">
-            <h3>Artist Radio</h3>
-            <a href="#">Show All</a>
-        </div>
+                            <div class="card">
+                                <img src="image/Shreya.jpeg" alt="Shreya Ghoshal">
+                                <h3>Shreya Ghoshal Radio</h3>
+                                <p>with A.R Rahman, Vishal-Shekar and more</p>
+                            </div>
 
-        <div class="slider">
-            <div class="card">
-                <img src="Arjit singh.jpeg" alt="Arjit Singh">
-                <h3>Arijit Singh Radio</h3>
-                <p>with Jeet Gannguli, Pritam and more</p>
-            </div>
-            <div class="card">
-            <img src="Diljit.jpeg" alt="Diljit Dosanjh">
-            <h3>Diljit Dosanjh Radio</h3>
-            <p>with Harrdy Sandhu, Sidhu Moose Wala and more</p>
-        </div>
+                            <div class="card">
+                                <img src="image/Atif.jpeg" alt="Atif Asalam">
+                                <h3>Atif Aslam Radio</h3>
+                                <p>with Vishal-Shekar, Sachin-Jigar and more</p>
+                            </div>
 
-        <div class="card">
-            <img src="Shreya.jpeg" alt="Shreya Ghoshal">
-            <h3>Shreya Ghoshal Radio</h3>
-            <p>with A.R Rahman, Vishal-Shekar and more</p>
-        </div>
+                            <div class="card">
+                                <img src="image/Karan Aujla.jpeg" alt="Karan Aujla">
+                                <h3>Karan Aujla Radio</h3>
+                                <p>with Shubh, AP Dhillon and more</p>
+                            </div>
+                        </div>
+                    </section>
 
-        <div class="card">
-            <img src="Atif.jpeg" alt="Atif Asalam">
-            <h3>Atif Aslam Radio</h3>
-            <p>with Vishal-Shekar, Sachin-Jigar and more</p>
-        </div>
+                    <section class="podcasts">
 
-        <div class="card">
-            <img src="Karan Aujla.jpeg" alt="Karan Aujla">
-            <h3>Karan Aujla Radio</h3>
-            <p>with Shubh, AP Dhillon and more</p>
-        </div>
+                        <div class="popular-header">
+                            <h3>Popular Podcasts</h3>
+                            <a href="#">Show All</a>
+                        </div>
 
-        </div>
-    </section>
-    <section class="podcasts">
+                        <div class="podcast-grid">
 
-    <div class="popular-header">
-        <h3>Popular Podcasts</h3>
-        <a href="#">Show All</a>
-    </div>
+                            <div class="podcast-card">
 
-    <div class="podcast-grid">
+                                <div class="podcast-top">
 
-        <div class="podcast-card">
+                                    <img src="image/podcast1.jpg" class="podcast-cover">
 
-            <div class="podcast-top">
+                                    <div class="podcast-info">
+                                        <h3>The Psychology of Your 20s</h3>
+                                        <span>🎥 Video • Jemma Sbeg</span>
+                                    </div>
 
-                <img src="podcast1.jpg" class="podcast-cover">
+                                </div>
 
-                <div class="podcast-info">
-                    <h3>The Psychology of Your 20s</h3>
-                    <span>🎥 Video • Jemma Sbeg</span>
-                </div>
+                                <img src="image/podcast1.jpg" class="episode-image">
 
-            </div>
+                                <p class="episode-desc">
+                                    Jun 23 • 39 min • Practical advice on relationships, career growth and navigating your twenties.
+                                </p>
 
-            <img src="podcast1.jpg" class="episode-image">
+                            </div>
 
-            <p class="episode-desc">
-                Jun 23 • 39 min • Practical advice on relationships, career growth and navigating your twenties.
-            </p>
+                            <div class="podcast-card">
 
-        </div>
+                                <div class="podcast-top">
 
-        <div class="podcast-card">
+                                    <img src="image/podcast2.jpg" class="podcast-cover">
 
-            <div class="podcast-top">
+                                    <div class="podcast-info">
+                                        <h3>Anything Goes</h3>
+                                        <span>🎥 Video • Emma Chamberlain</span>
+                                    </div>
 
-                <img src="podcast2.jpg" class="podcast-cover">
+                                </div>
 
-                <div class="podcast-info">
-                    <h3>Anything Goes</h3>
-                    <span>🎥 Video • Emma Chamberlain</span>
-                </div>
+                                <img src="image/podcast2.jpg" class="episode-image">
 
-            </div>
+                                <p class="episode-desc">
+                                    Jul 31 • 50 min • Honest conversations about life, confidence and creativity.
+                                </p>
 
-            <img src="podcast2.jpg" class="episode-image">
+                            </div>
 
-            <p class="episode-desc">
-                Jul 31 • 50 min • Honest conversations about life, confidence and creativity.
-            </p>
+                        </div>
 
-        </div>
+                    </section>
 
-    </div>
+                  </div>
+                  <!-- /#homeView -->
 
-</section> 
+                  <!-- Playlist detail view -->
+                  <div id="playlistView" class="page-view" hidden>
 
-</section>
+                        <button type="button" class="back-btn" data-back-to="homeView">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+
+                        <div class="playlist-hero">
+                            <img id="playlistCover" src="image/Liked.jpg" alt="">
+                            <div>
+                                <span class="playlist-kicker">Playlist</span>
+                                <h1 id="playlistTitle">Liked Songs</h1>
+                                <p id="playlistMeta">10 songs</p>
+                                <button type="button" class="play-all-btn" id="playAllBtn">
+                                    <i class="fa-solid fa-play"></i> Play
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="track-list" id="trackList"></div>
+
+                  </div>
+
+                  <!-- Profile view -->
+                  <div id="profileView" class="page-view" hidden>
+
+                        <button type="button" class="back-btn" data-back-to="homeView">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+
+                        <div class="profile-page">
+                            <div class="profile-avatar-lg" id="profileAvatarLg">E</div>
+                            <h1 id="profileEmail">you@gmail.com</h1>
+                            <p class="profile-sub">EchoBeat Free Plan</p>
+                        </div>
+
+                  </div>
+
+                  <!-- Account settings view -->
+                  <div id="settingsView" class="page-view" hidden>
+
+                        <button type="button" class="back-btn" data-back-to="homeView">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+
+                        <h1 class="settings-title">Account Settings</h1>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Light theme</h4>
+                                <p>Switch EchoBeat between dark and light appearance</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="themeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Autoplay</h4>
+                                <p>Keep the music going with similar songs</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="autoplayToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Show explicit content</h4>
+                                <p>Allow explicit songs and podcasts to play</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="explicitToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Notifications</h4>
+                                <p>Get notified about new releases from artists you follow</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="notifToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Data saver</h4>
+                                <p>Reduce data usage while streaming</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="dataSaverToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Crossfade</h4>
+                                <p>Blend the end of one song with the start of the next</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="crossfadeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <h4>Private session</h4>
+                                <p>Listen without it affecting your recommendations</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="privateToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                  </div>
+
+                </section>
 
                 <aside class="right-sidebar">
 
@@ -369,7 +638,7 @@
 
                     <div class="now-playing-card">
 
-                        <img src="All the Stars.jpg" alt="Album Cover" class="album-cover">
+                        <img src="image/All the Stars.jpg" alt="Album Cover" class="album-cover">
 
                         <div class="song-details">
 
@@ -398,7 +667,7 @@
 
                     </div>
 
-                                        <div class="artist-card">
+                    <div class="artist-card">
 
                         <div class="artist-header">
 
@@ -406,7 +675,7 @@
 
                         </div>
 
-                        <img src="The weeknd.jpg" alt="The Weeknd" class="artist-banner">
+                        <img src="image/The weeknd.jpg" alt="The Weeknd" class="artist-banner">
 
                         <div class="artist-info">
 
@@ -496,7 +765,7 @@
 
                             <div class="video-item">
 
-                                <img src="Starboy.jpg" alt="Starboy">
+                                <img src="image/Starboy.jpg" alt="Starboy">
 
                                 <p>Starboy</p>
 
@@ -504,7 +773,7 @@
 
                             <div class="video-item">
 
-                                <img src="Blinding lights.jpg" alt="Blinding Lights">
+                                <img src="image/Blinding lights.jpg" alt="Blinding Lights">
 
                                 <p>Blinding Lights</p>
 
@@ -526,7 +795,7 @@
 
                         <div class="queue-item">
 
-                            <img src="Starboy.jpg" alt="Starboy">
+                            <img src="image/Starboy.jpg" alt="Starboy">
 
                             <div>
 
@@ -540,7 +809,7 @@
 
                         <div class="queue-item">
 
-                            <img src="Save your tears.jpg" alt="Save Your Tears">
+                            <img src="image/Save your tears.jpg" alt="Save Your Tears">
 
                             <div>
 
@@ -554,7 +823,7 @@
 
                         <div class="queue-item">
 
-                            <img src="Less than Zero.jpg" alt="Less Than Zero">
+                            <img src="image/Less than Zero.jpg" alt="Less Than Zero">
 
                             <div>
 
@@ -574,85 +843,146 @@
 
             <div class="music-player">
 
-            <div class="player-left">
+                <div class="player-left">
 
-                <img src="All the Stars.jpg" alt="Now Playing">
+                    <img src="image/All the Stars.jpg" alt="Now Playing">
 
-                <div class="track-details">
+                    <div class="track-details">
 
-                    <h4>All The Stars (with SZA)</h4>
+                        <h4>All The Stars (with SZA)</h4>
 
-                    <p>Kendrick Lamar, SZA</p>
-
-                </div>
-
-                <i class="fa-regular fa-heart"></i>
-
-            </div>
-
-            <div class="player-center">
-
-                <div class="player-controls">
-
-                    <i class="fa-solid fa-shuffle"></i>
-
-                    <i class="fa-solid fa-backward-step"></i>
-
-                    <button class="play-btn">
-                        <i class="fa-solid fa-play"></i>
-                    </button>
-
-                    <i class="fa-solid fa-forward-step"></i>
-
-                    <i class="fa-solid fa-repeat"></i>
-
-                </div>
-
-                <div class="progress-bar">
-
-                    <span>1:27</span>
-
-                    <div class="progress-track">
-
-                        <div class="progress-fill"></div>
+                        <p>Kendrick Lamar, SZA</p>
 
                     </div>
 
-                    <span>3:52</span>
+                    <i class="fa-regular fa-heart"></i>
+
+                </div>
+
+                <div class="player-center">
+
+                    <div class="player-controls">
+
+                        <i class="fa-solid fa-shuffle"></i>
+
+                        <i class="fa-solid fa-backward-step"></i>
+
+                        <button class="play-btn">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+
+                        <i class="fa-solid fa-forward-step"></i>
+
+                        <i class="fa-solid fa-repeat"></i>
+
+                    </div>
+
+                    <div class="progress-bar">
+
+                        <span>1:27</span>
+
+                        <div class="progress-track">
+
+                            <div class="progress-fill"></div>
+
+                        </div>
+
+                        <span>3:52</span>
+
+                    </div>
+
+                </div>
+
+                <div class="player-right">
+
+                    <i class="fa-solid fa-microphone"></i>
+
+                    <i class="fa-solid fa-list"></i>
+
+                    <i class="fa-solid fa-laptop"></i>
+
+                    <i class="fa-solid fa-volume-high"></i>
+
+                    <div class="volume-track">
+
+                        <div class="volume-fill"></div>
+
+                    </div>
+
+                    <i class="fa-solid fa-expand"></i>
 
                 </div>
 
             </div>
-
-            <div class="player-right">
-
-                <i class="fa-solid fa-microphone"></i>
-
-                <i class="fa-solid fa-list"></i>
-
-                <i class="fa-solid fa-laptop"></i>
-
-                <i class="fa-solid fa-volume-high"></i>
-
-                <div class="volume-track">
-
-                    <div class="volume-fill"></div>
-
-                </div>
-
-                <i class="fa-solid fa-expand"></i>
-
-            </div>
-
-        </div>
-           
-
-    </div>
 
         </main>
 
     </div>
-    
+    <!-- /#mainApp -->
+
+    <!-- Video player modal -->
+    <div id="videoModal" class="video-modal" hidden>
+        <div class="video-modal-inner">
+            <button type="button" class="video-modal-close" id="videoModalClose">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <video id="videoPlayer" controls></video>
+        </div>
+    </div>
+
+    <!-- Phone number login (reached via "Forgot your password?") -->
+    <div id="phoneLoginScreen" style="display:none;">
+
+        <header>
+            <div class="logo">
+                <img src="image/EchoBeat.png" alt="EchoBeat Logo">
+                <span>EchoBeat</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="card">
+
+                <h1>Log in with phone</h1>
+                <p class="phone-sub">Enter your 10-digit mobile number and we'll send you a verification link.</p>
+
+                <form id="phoneForm" novalidate>
+
+                    <div class="field">
+                        <label for="phoneNumber">Phone number</label>
+                        <input
+                            type="tel"
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            inputmode="numeric"
+                            maxlength="10"
+                            autocomplete="tel"
+                            placeholder="10-digit mobile number"
+                        >
+                        <div class="error-msg" id="phoneError">
+                            <img src="image/error.png" alt="Error">
+                            <span>Enter a valid 10-digit phone number.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="phoneSubmitBtn">
+                        Send verification link
+                    </button>
+
+                    <p class="phone-status" id="phoneStatus"></p>
+
+                    <a href="#" class="forgot-link" id="backToLoginLink">
+                        Back to login
+                    </a>
+
+                </form>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
 
 </body>
 
