@@ -24,6 +24,27 @@ const phoneError = document.getElementById('phoneError');
 const phoneSubmitBtn = document.getElementById('phoneSubmitBtn');
 const phoneStatus = document.getElementById('phoneStatus');
 
+// ----- Element references (sign up) -----
+const signupPage = document.getElementById('signupPage');
+const signupForm = document.getElementById('signupForm');
+
+const signupName = document.getElementById('signupName');
+const signupNameError = document.getElementById('signupNameError');
+
+const signupEmail = document.getElementById('signupEmail');
+const signupEmailError = document.getElementById('signupEmailError');
+
+const signupPassword = document.getElementById('signupPassword');
+const signupPasswordError = document.getElementById('signupPasswordError');
+const signupTogglePass = document.getElementById('signupTogglePass');
+
+const confirmPassword = document.getElementById('confirmPassword');
+const confirmPasswordError = document.getElementById('confirmPasswordError');
+const confirmTogglePass = document.getElementById('confirmTogglePass');
+
+const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+const loginLink = document.getElementById('loginLink');
+
 // ----- Element references (profile / settings / views) -----
 const profileBtn = document.getElementById('profileBtn');
 const profileDropdown = document.getElementById('profileDropdown');
