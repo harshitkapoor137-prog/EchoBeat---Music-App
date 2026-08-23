@@ -2136,3 +2136,464 @@ html[data-theme="light"] .volume-fill{
     color: #999;
     font-size: 14px;
 }
+
+/* =========================================
+   PROFILE PAGE - TOP ARTISTS & TOP TRACKS
+========================================= */
+
+.profile-page{
+    display:block;
+    text-align:left;
+    padding:30px 0 0;
+    width:100%;
+}
+
+/* Profile Header */
+.profile-header{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    padding:20px 0 45px;
+    border-bottom:1px solid #2a2a2a;
+}
+
+.profile-info{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.profile-label{
+    color:#b3b3b3;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:8px;
+}
+
+.profile-page h1{
+    font-size:34px;
+    margin:0;
+    word-break:break-word;
+}
+
+.profile-avatar-lg{
+    flex-shrink:0;
+    margin-bottom:0;
+}
+
+
+/* Profile Sections */
+.profile-section{
+    padding:42px 0 10px;
+}
+
+.profile-section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    margin-bottom:24px;
+}
+
+.profile-section-header h2{
+    font-size:25px;
+    margin-bottom:5px;
+}
+
+.profile-section-header p{
+    color:#b3b3b3;
+    font-size:14px;
+}
+
+.show-all-btn{
+    background:transparent;
+    border:none;
+    color:#b3b3b3;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    padding:8px;
+}
+
+.show-all-btn:hover{
+    color:#fff;
+    text-decoration:underline;
+}
+
+
+/* Top Artists */
+.top-artists-grid{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:24px;
+}
+
+.top-artist{
+    min-width:0;
+    cursor:pointer;
+}
+
+.top-artist img{
+    width:100%;
+    aspect-ratio:1;
+    object-fit:cover;
+    border-radius:50%;
+    display:block;
+    margin-bottom:14px;
+    transition:transform .25s, box-shadow .25s;
+}
+
+.top-artist:hover img{
+    transform:scale(1.04);
+    box-shadow:0 8px 25px rgba(0,0,0,.4);
+}
+
+.top-artist h3{
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin-bottom:5px;
+    color: white;
+}
+
+.top-artist p{
+    color: white;
+    font-size:13px;
+}
+
+
+/* Top Tracks */
+.top-tracks{
+    width:100%;
+}
+
+.top-track{
+    display:grid;
+    grid-template-columns:40px 52px minmax(180px, 1fr) minmax(100px, .7fr);
+    align-items:center;
+    gap:14px;
+    padding:10px 12px;
+    border-radius:7px;
+    cursor:pointer;
+    transition:background .2s;
+}
+
+.top-track:hover{
+    background:#242424;
+}
+
+.track-number{
+    color:#b3b3b3;
+    text-align:center;
+    font-size:15px;
+}
+
+.top-track img{
+    width:48px;
+    height:48px;
+    object-fit:cover;
+    border-radius:4px;
+}
+
+.top-track-info h3{
+    font-size:15px;
+    margin-bottom:5px;
+    color: white;
+}
+
+.top-track-info p,
+.track-album{
+    color: white;
+    font-size:13px;
+}
+
+.track-album{
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+
+/* Footer */
+.app-footer{
+    margin-top:65px;
+    padding:45px 0 28px;
+    border-top:1px solid #2a2a2a;
+}
+
+.footer-main{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr) auto;
+    gap:35px;
+    padding-bottom:45px;
+}
+
+.footer-column{
+    display:flex;
+    flex-direction:column;
+    gap:13px;
+}
+
+.footer-column h4{
+    font-size:15px;
+    margin-bottom:5px;
+}
+
+.footer-column a,
+.footer-legal a{
+    color:#b3b3b3;
+    text-decoration:none;
+    font-size:14px;
+}
+
+.footer-column a:hover,
+.footer-legal a:hover{
+    color:#fff;
+}
+
+.footer-socials{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+}
+
+.footer-socials a{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:#292929;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    transition:transform .2s, background .2s;
+}
+
+.footer-socials a:hover{
+    background:#3d3d3d;
+    transform:scale(1.08);
+}
+
+.footer-bottom{
+    border-top:1px solid #2a2a2a;
+    padding-top:25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+}
+
+.footer-legal{
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+}
+
+.footer-bottom p{
+    color:#b3b3b3;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+
+/* Responsive Profile */
+@media(max-width:1100px){
+    .top-artists-grid{
+        grid-template-columns:repeat(3, 1fr);
+    }
+
+    .footer-main{
+        grid-template-columns:repeat(2, 1fr);
+    }
+
+    .footer-socials{
+        grid-column:span 2;
+    }
+}
+
+@media(max-width:700px){
+    .profile-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .profile-page h1{
+        font-size:26px;
+    }
+
+    .top-artists-grid{
+        grid-template-columns:repeat(2, 1fr);
+    }
+
+    .top-track{
+        grid-template-columns:30px 52px 1fr;
+    }
+
+    .track-album{
+        display:none;
+    }
+
+    .footer-main{
+        grid-template-columns:1fr 1fr;
+        gap:30px;
+    }
+
+    .footer-bottom{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}
+/* ================= SIGN UP PAGE ================= */
+
+.signup-page {
+    min-height: 100vh;
+    background: #121212;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 70px 20px;
+    box-sizing: border-box;
+}
+
+.signup-logo {
+    margin-bottom: 18px;
+}
+
+.signup-logo img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.signup-container {
+    width: 100%;
+    max-width: 360px;
+}
+
+.signup-container h1 {
+    text-align: center;
+    font-size: 46px;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin: 0 0 42px;
+    font-weight: 800;
+}
+
+.signup-container .field {
+    margin-bottom: 18px;
+}
+
+.signup-container label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.signup-container input {
+    width: 100%;
+    height: 52px;
+    box-sizing: border-box;
+    background: transparent;
+    border: 1px solid #727272;
+    border-radius: 4px;
+    color: white;
+    padding: 0 14px;
+    font-size: 16px;
+    outline: none;
+}
+
+.signup-container input:focus {
+    border: 2px solid white;
+}
+
+.signup-container input::placeholder {
+    color: #a7a7a7;
+}
+
+.signup-next-btn {
+    width: 100%;
+    height: 54px;
+    border: none;
+    border-radius: 30px;
+    background: var(--green);
+    color: #000;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 2px;
+}
+
+.signup-next-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.08);
+}
+
+.signup-or {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 26px 0;
+}
+
+.signup-or span {
+    flex: 1;
+    height: 1px;
+    background: #292929;
+}
+
+.signup-or p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.signup-social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.signup-option-btn {
+    position: relative;
+    width: 100%;
+    height: 54px;
+    border: 1px solid #727272;
+    border-radius: 30px;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.signup-option-btn:hover {
+    border-color: white;
+    transform: scale(1.01);
+}
+
+.signup-option-icon,
+.signup-option-btn .social-icon {
+    position: absolute;
+    left: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+    .signup-page {
+        padding-top: 45px;
+    }
+
+    .signup-container h1 {
+        font-size: 38px;
+    }
+}
