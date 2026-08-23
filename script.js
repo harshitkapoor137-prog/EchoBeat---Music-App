@@ -186,6 +186,86 @@ const SINGLE_TRACKS = {
 };
 
 // =====================================================================
+// Dynamic Liked Songs
+// =====================================================================
+
+function getLikedSongs() {
+    try {
+        return JSON.parse(
+            localStorage.getItem(LIKED_SONGS_KEY)
+        ) || [];
+    } catch {
+        return [];
+    }
+}
+
+function saveLikedSongs(songs) {
+    localStorage.setItem(
+        LIKED_SONGS_KEY,
+        JSON.stringify(songs)
+    );
+}
+
+
+// Build one master catalogue from every playlist + single tracks
+function getAllAvailableTracks() {
+
+    const tracks = [];
+
+    Object.values(PLAYLISTS).forEach((playlist) => {
+        playlist.tracks.forEach((track) => {
+
+            const alreadyExists =
+                tracks.some(
+                    item => item.title === track.title
+                );
+
+            if (!alreadyExists) {
+                tracks.push(track);
+            }
+
+        });
+    });
+
+
+    Object.values(SINGLE_TRACKS).forEach((track) => {
+
+        const alreadyExists =
+            tracks.some(
+                item => item.title === track.title
+            );
+
+        if (!alreadyExists) {
+            tracks.push(track);
+        }
+
+    });
+
+    return tracks;
+}
+
+
+// Return ONLY songs that the user has actually liked
+function getDynamicLikedTracks() {
+
+    const likedTitles = getLikedSongs();
+
+    if (!likedTitles.length) {
+        return [];
+    }
+
+    const allTracks = getAllAvailableTracks();
+
+    return likedTitles
+        .map(title =>
+            allTracks.find(
+                track => track.title === title
+            )
+        )
+        .filter(Boolean);
+}
+
+// =====================================================================
 // Player state
 // =====================================================================
 
@@ -269,8 +349,16 @@ function togglePlayPause() {
     setPlayIcon(isPlaying);
 }
 
-function playNext() {
+function playNext(autoNext = false) {
     if (!currentQueue.length) return;
+
+    // Stop after the last song when advancing automatically.
+    if (autoNext && currentIndex >= currentQueue.length - 1) {
+        isPlaying = false;
+        setPlayIcon(false);
+        return;
+    }
+
     loadTrack(currentIndex + 1, true);
 }
 
@@ -280,11 +368,11 @@ function playPrev() {
 }
 
 if (playBtn) playBtn.addEventListener('click', togglePlayPause);
-if (forwardBtn) forwardBtn.addEventListener('click', playNext);
+if (forwardBtn) forwardBtn.addEventListener('click', () => playNext(false));
 if (backwardBtn) backwardBtn.addEventListener('click', playPrev);
 
 audioPlayer.addEventListener('ended', () => {
-    playNext();
+    playNext(true);
 });
 
 audioPlayer.addEventListener('timeupdate', () => {
@@ -346,37 +434,130 @@ function openPlaylist(key) {
     const playlist = PLAYLISTS[key];
     if (!playlist) return;
 
-    currentPlaylistKey = key;
-    playlistCover.src = playlist.cover;
-    playlistTitle.textContent = playlist.title;
-    playlistMeta.textContent = `${playlist.tracks.length} songs`;
+    // ---------------------------------------------------------------
+    // Liked Songs is dynamic
+    // ---------------------------------------------------------------
 
+    const tracks =
+        key === 'liked'
+            ? getDynamicLikedTracks()
+            : playlist.tracks;
+
+
+    currentPlaylistKey = key;
+
+    // Playlist cover
+    playlistCover.src = playlist.cover;
+
+
+    // Playlist title
+    playlistTitle.textContent = playlist.title;
+
+
+    // Dynamic song count
+    playlistMeta.textContent =
+        `${tracks.length} songs`;
+
+
+    // Reset track list
     trackListEl.innerHTML = `
         <div class="track-list-header">
             <span class="col-num">#</span>
             <span class="col-title">Title</span>
-            <span class="col-duration"><i class="fa-regular fa-clock"></i></span>
+            <span class="col-duration">
+                <i class="fa-regular fa-clock"></i>
+            </span>
         </div>
     `;
-    playlist.tracks.forEach((track, idx) => {
-        const row = document.createElement('div');
-        row.className = 'track-row';
+
+
+    // ---------------------------------------------------------------
+    // Empty Liked Songs state
+    // ---------------------------------------------------------------
+
+    if (key === 'liked' && tracks.length === 0) {
+        const emptyState =
+            document.createElement('div');
+
+        emptyState.className =
+            'liked-empty-state';
+        emptyState.innerHTML = `
+            <i class="fa-regular fa-heart"></i>
+            <h3>No liked songs yet</h3>
+            <p>
+                Songs you like will appear here.
+            </p>
+        `;
+        trackListEl.appendChild(
+            emptyState
+        );
+        showView(playlistView);
+        return;
+    }
+
+
+    // ---------------------------------------------------------------
+    // Render tracks
+    // ---------------------------------------------------------------
+
+    tracks.forEach((track, idx) => {
+
+        const row =
+            document.createElement('div');
+
+        row.className =
+            'track-row';
+
         row.innerHTML = `
-            <span class="track-num">${idx + 1}</span>
-            <img src="${track.cover}" alt="" class="track-cover">
+            <span class="track-num">
+                ${idx + 1}
+            </span>
+            <img
+                src="${track.cover}"
+                alt=""
+                class="track-cover"
+            >
             <div class="track-info">
                 <div class="track-text">
-                    <h4>${track.title}</h4>
-                    <p>${track.artist}${track.video ? ' <span class="track-video-tag"><i class="fa-solid fa-video"></i> Video</span>' : ''}</p>
+                    <h4>
+                        ${track.title}
+                    </h4>
+                    <p>
+                        ${track.artist}
+                        ${
+                            track.video
+                                ? `
+                                    <span class="track-video-tag">
+                                        <i class="fa-solid fa-video"></i>
+                                        Video
+                                    </span>
+                                  `
+                                : ''
+                        }
+                    </p>
                 </div>
             </div>
-            <span class="track-duration"><i class="fa-regular fa-heart"></i></span>
+            <span class="track-duration">
+                <i
+                    class="fa-regular fa-heart"
+                    title="Like"
+                ></i>
+            </span>
         `;
-        row.addEventListener('click', () => {
-            // Playing from inside a playlist keeps the whole playlist as the
-            // queue, so previous/next step through the other tracks in it.
-            playQueue(playlist.tracks, idx);
-        });
+
+        // -----------------------------------------------------------
+        // Clicking the row plays the song
+        // -----------------------------------------------------------
+
+        row.addEventListener(
+            'click',
+            () => {
+
+                // Important:
+                // Use THIS playlist's actual track list.
+                playQueue(tracks, idx);
+            }
+        );
         trackListEl.appendChild(row);
     });
 
@@ -396,8 +577,20 @@ document.querySelectorAll('.quick-card[data-playlist]').forEach((card) => {
 
 if (playAllBtn) {
     playAllBtn.addEventListener('click', () => {
-        const playlist = PLAYLISTS[currentPlaylistKey];
-        if (playlist) playQueue(playlist.tracks, 0);
+        const playlist =
+            PLAYLISTS[currentPlaylistKey];
+        if (!playlist) return;
+        const tracks =
+            currentPlaylistKey === 'liked'
+                ? getDynamicLikedTracks()
+                : playlist.tracks;
+        if (!tracks.length) {
+            showToast(
+                'No liked songs to play'
+            );
+            return;
+        }
+        playQueue(tracks, 0);
     });
 }
 
@@ -740,3 +933,891 @@ document.getElementById('signupLink').addEventListener('click', (e) => {
 
 initSettingsUI();
 restoreSession();
+
+// ---------------------------------------------------------------------
+// 1. HOME BUTTON — return to Home from anywhere
+// ---------------------------------------------------------------------
+
+function goHome() {
+    showView(homeView);
+
+    // Close profile dropdown if it is open
+    if (profileDropdown) {
+        profileDropdown.classList.remove('show');
+    }
+
+    if (profileBtn) {
+        profileBtn.setAttribute('aria-expanded', 'false');
+    }
+}
+
+// Header Home button
+const headerHomeBtn = document.querySelector('.home-btn');
+
+if (headerHomeBtn) {
+    headerHomeBtn.addEventListener('click', goHome);
+}
+
+// Sidebar Home button
+const sidebarNavIcons = document.querySelectorAll('.top-icons .nav-icon');
+
+if (sidebarNavIcons.length > 0) {
+    const sidebarHomeBtn = sidebarNavIcons[0];
+
+    sidebarHomeBtn.addEventListener('click', goHome);
+}
+
+
+// ---------------------------------------------------------------------
+// 2. SIDEBAR SEARCH BUTTON
+// ---------------------------------------------------------------------
+
+const searchInput = document.querySelector('.search-bar input');
+const searchIcon = document.querySelector('.search-bar .fa-magnifying-glass');
+
+const sidebarSearchBtn = sidebarNavIcons.length > 1
+    ? sidebarNavIcons[1]
+    : null;
+
+function focusSearch() {
+    if (!searchInput) return;
+
+    searchInput.focus();
+    searchInput.select();
+}
+
+if (sidebarSearchBtn) {
+    sidebarSearchBtn.addEventListener('click', focusSearch);
+}
+
+if (searchIcon) {
+    searchIcon.addEventListener('click', focusSearch);
+}
+
+
+// ---------------------------------------------------------------------
+// 3. SEARCH — search songs and playlists
+// ---------------------------------------------------------------------
+
+function performSearch() {
+
+    if (!searchInput) return;
+
+    const query = searchInput.value.trim().toLowerCase();
+
+    if (!query) {
+        showToast('Type a song or playlist to search');
+        searchInput.focus();
+        return;
+    }
+
+    // First search playlist names
+    for (const [key, playlist] of Object.entries(PLAYLISTS)) {
+
+        if (playlist.title.toLowerCase().includes(query)) {
+
+            openPlaylist(key);
+            showToast(`Opened ${playlist.title}`);
+            return;
+        }
+    }
+
+    // Search every song in every playlist
+    for (const [key, playlist] of Object.entries(PLAYLISTS)) {
+
+        const songIndex = playlist.tracks.findIndex(track =>
+            track.title.toLowerCase().includes(query) ||
+            track.artist.toLowerCase().includes(query)
+        );
+
+        if (songIndex !== -1) {
+
+            openPlaylist(key);
+
+            // Start the matching song
+            playQueue(playlist.tracks, songIndex);
+
+            showToast(`Playing ${playlist.tracks[songIndex].title}`);
+            return;
+        }
+    }
+
+    // Search the single-track cards
+    for (const [key, track] of Object.entries(SINGLE_TRACKS)) {
+
+        if (
+            track.title.toLowerCase().includes(query) ||
+            track.artist.toLowerCase().includes(query)
+        ) {
+
+            playSingleTrack(key);
+            return;
+        }
+    }
+
+    showToast(`No results found for "${searchInput.value}"`);
+}
+
+if (searchInput) {
+
+    // Press Enter to search
+    searchInput.addEventListener('keydown', (event) => {
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            performSearch();
+        }
+
+    });
+
+}
+
+
+// Clicking the search icon performs search if text exists,
+// otherwise it simply focuses the search bar.
+if (searchIcon) {
+
+    searchIcon.addEventListener('click', () => {
+
+        if (searchInput && searchInput.value.trim()) {
+            performSearch();
+        } else {
+            focusSearch();
+        }
+
+    });
+
+}
+
+
+// ---------------------------------------------------------------------
+// 4. LEFT SIDEBAR PLAYLIST BUTTONS
+// ---------------------------------------------------------------------
+
+const sidebarPlaylists = document.querySelectorAll('.library img.playlist');
+
+const sidebarPlaylistMap = {
+
+    'liked.jpg': 'liked',
+    'myplaylist.jpg': 'myplaylist7',
+    'pop.jpg': 'poppart',
+    'techno.jpg': 'technomix',
+    'shuffle.jpg': 'shuffle',
+    'thinking.jpg': 'thinking'
+
+};
+
+sidebarPlaylists.forEach((playlistImage) => {
+
+    playlistImage.style.cursor = 'pointer';
+
+    playlistImage.addEventListener('click', () => {
+
+        const src = playlistImage.getAttribute('src') || '';
+
+        const filename = src
+            .split('/')
+            .pop()
+            .toLowerCase();
+
+        const playlistKey = sidebarPlaylistMap[filename];
+
+        if (!playlistKey) {
+            showToast('Playlist is not available');
+            return;
+        }
+
+        // Thinking Out Loud is a single track
+        if (SINGLE_TRACKS[playlistKey]) {
+
+            playSingleTrack(playlistKey);
+
+        } else {
+
+            openPlaylist(playlistKey);
+
+        }
+
+    });
+
+});
+
+
+// Bookmark/library button → Liked Songs
+const libraryButton = document.querySelector('.library-icon');
+
+if (libraryButton) {
+
+    libraryButton.style.cursor = 'pointer';
+
+    libraryButton.addEventListener('click', () => {
+        openPlaylist('liked');
+    });
+
+}
+
+
+// ---------------------------------------------------------------------
+// 5. LIKE / UNLIKE SYSTEM
+// ---------------------------------------------------------------------
+
+const LIKED_SONGS_KEY = 'echobeat_liked_songs';
+
+function getLikedSongs() {
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(LIKED_SONGS_KEY)
+        ) || [];
+
+    } catch {
+
+        return [];
+
+    }
+
+}
+
+function isSongLiked(title) {
+
+    return getLikedSongs().includes(title);
+
+}
+
+// Update the appearance of a heart icon
+function updateHeartIcon(icon, liked) {
+
+    if (!icon) return;
+
+    icon.classList.toggle('fa-solid', liked);
+    icon.classList.toggle('fa-regular', !liked);
+
+    icon.style.color = liked ? '#1DB954' : '#B3B3B3';
+
+}
+
+
+// Refresh every visible heart
+function refreshLikeIcons() {
+
+    const currentTrack =
+        currentQueue.length && currentIndex >= 0
+            ? currentQueue[currentIndex]
+            : null;
+
+    // Now Playing heart
+    document.querySelectorAll(
+        '.now-playing-card .fa-heart'
+    ).forEach(icon => {
+
+        updateHeartIcon(
+            icon,
+            currentTrack
+                ? isSongLiked(currentTrack.title)
+                : false
+        );
+
+    });
+
+    // Bottom player heart
+    document.querySelectorAll(
+        '.player-left .fa-heart'
+    ).forEach(icon => {
+
+        updateHeartIcon(
+            icon,
+            currentTrack
+                ? isSongLiked(currentTrack.title)
+                : false
+        );
+
+    });
+
+    // Playlist row hearts
+    document.querySelectorAll(
+        '.track-row .fa-heart'
+    ).forEach(icon => {
+
+        const row =
+            icon.closest('.track-row');
+
+        if (!row) return;
+
+        const titleElement =
+            row.querySelector('.track-text h4');
+
+        if (!titleElement) return;
+
+        updateHeartIcon(
+            icon,
+            isSongLiked(
+                titleElement.textContent.trim()
+            )
+        );
+
+    });
+
+}
+
+// Refresh the currently open Liked Songs playlist
+if (currentPlaylistKey === 'liked') {
+    openPlaylist('liked');
+}
+
+// Capture-phase listener.
+// This prevents clicking a heart from also triggering
+// the playlist row's "play song" click.
+document.addEventListener('click', (event) => {
+
+    const heart = event.target.closest('.fa-heart');
+
+    if (!heart) return;
+
+
+    let title = null;
+
+    // Heart inside playlist row
+    const row = heart.closest('.track-row');
+
+    if (row) {
+
+        const titleElement =
+            row.querySelector('.track-text h4');
+
+        if (titleElement) {
+            title = titleElement.textContent.trim();
+        }
+
+    }
+
+
+    // Heart inside player / Now Playing
+    if (!title && currentQueue.length && currentIndex >= 0) {
+
+        title = currentQueue[currentIndex].title;
+
+    }
+
+
+    if (!title) return;
+
+
+    // Stop row click from playing the song
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+
+    const likedSongs = getLikedSongs();
+
+    const index = likedSongs.indexOf(title);
+
+    let liked;
+
+    if (index === -1) {
+
+        likedSongs.push(title);
+        liked = true;
+
+    } else {
+
+        likedSongs.splice(index, 1);
+        liked = false;
+
+    }
+
+    saveLikedSongs(likedSongs);
+
+updateHeartIcon(heart, liked);
+
+refreshLikeIcons();
+
+// If currently viewing Liked Songs,
+// immediately rebuild the list.
+if (currentPlaylistKey === 'liked') {
+    openPlaylist('liked');
+}
+
+showToast(
+    liked
+        ? `❤️ Added "${title}" to Liked Songs`
+        : `Removed "${title}" from Liked Songs`
+);
+
+});
+
+// Refresh hearts whenever a new song loads
+audioPlayer.addEventListener('loadstart', () => {
+
+    setTimeout(() => {
+        refreshLikeIcons();
+    }, 50);
+
+});
+
+
+// ---------------------------------------------------------------------
+// 6. VOLUME CONTROL
+// ---------------------------------------------------------------------
+
+const volumeIcon =
+    document.querySelector('.player-right .fa-volume-high');
+
+const volumeTrack =
+    document.querySelector('.volume-track');
+
+const volumeFill =
+    document.querySelector('.volume-fill');
+
+let previousVolume = 1;
+
+
+// Set initial volume
+audioPlayer.volume = 1;
+
+if (volumeFill) {
+    volumeFill.style.width = '100%';
+}
+
+
+// Click volume bar
+if (volumeTrack) {
+
+    volumeTrack.addEventListener('click', (event) => {
+
+        const rect =
+            volumeTrack.getBoundingClientRect();
+
+        let volume =
+            (event.clientX - rect.left) / rect.width;
+
+        volume = Math.max(0, Math.min(1, volume));
+
+        audioPlayer.volume = volume;
+
+        if (volume > 0) {
+            previousVolume = volume;
+        }
+
+        if (volumeFill) {
+            volumeFill.style.width =
+                `${volume * 100}%`;
+        }
+
+        updateVolumeIcon();
+
+    });
+
+}
+
+
+// Mute / unmute
+if (volumeIcon) {
+
+    volumeIcon.style.cursor = 'pointer';
+
+    volumeIcon.addEventListener('click', () => {
+
+        if (audioPlayer.volume > 0) {
+
+            previousVolume =
+                audioPlayer.volume;
+
+            audioPlayer.volume = 0;
+
+        } else {
+
+            audioPlayer.volume =
+                previousVolume || 1;
+
+        }
+
+        if (volumeFill) {
+
+            volumeFill.style.width =
+                `${audioPlayer.volume * 100}%`;
+
+        }
+
+        updateVolumeIcon();
+
+    });
+
+}
+
+
+function updateVolumeIcon() {
+
+    if (!volumeIcon) return;
+
+    volumeIcon.classList.remove(
+        'fa-volume-high',
+        'fa-volume-low',
+        'fa-volume-xmark'
+    );
+
+    if (audioPlayer.volume === 0) {
+
+        volumeIcon.classList.add(
+            'fa-volume-xmark'
+        );
+
+    } else if (audioPlayer.volume < 0.5) {
+
+        volumeIcon.classList.add(
+            'fa-volume-low'
+        );
+
+    } else {
+
+        volumeIcon.classList.add(
+            'fa-volume-high'
+        );
+
+    }
+
+}
+
+
+// ---------------------------------------------------------------------
+// 7. SONG FULLSCREEN PLAYER
+// ---------------------------------------------------------------------
+
+let fullscreenOverlay = null;
+
+function openSongFullscreen() {
+
+    if (
+        !currentQueue.length ||
+        currentIndex < 0
+    ) {
+
+        showToast('Play a song first');
+        return;
+
+    }
+
+    const track =
+        currentQueue[currentIndex];
+
+
+    // Remove an old overlay if one exists
+    if (fullscreenOverlay) {
+        fullscreenOverlay.remove();
+    }
+
+
+    fullscreenOverlay =
+        document.createElement('div');
+
+    fullscreenOverlay.id =
+        'echoBeatFullscreen';
+
+
+    fullscreenOverlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #050505;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        box-sizing: border-box;
+        font-family: Montserrat, Arial, sans-serif;
+    `;
+
+
+    fullscreenOverlay.innerHTML = `
+
+        <button
+            id="echoFullscreenClose"
+            style="
+                position:absolute;
+                top:25px;
+                right:30px;
+                width:45px;
+                height:45px;
+                border:0;
+                border-radius:50%;
+                background:#222;
+                color:white;
+                font-size:20px;
+                cursor:pointer;
+            "
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+
+        <img
+            id="echoFullscreenCover"
+            src="${track.cover}"
+            alt="${track.title}"
+            style="
+                width:min(55vw, 430px);
+                height:min(55vw, 430px);
+                object-fit:cover;
+                border-radius:14px;
+                box-shadow:0 20px 60px rgba(0,0,0,.55);
+                margin-bottom:30px;
+            "
+        >
+
+
+        <h1
+            id="echoFullscreenTitle"
+            style="
+                margin:0 0 8px;
+                font-size:clamp(26px,4vw,44px);
+                text-align:center;
+            "
+        >
+            ${track.title}
+        </h1>
+
+
+        <p
+            id="echoFullscreenArtist"
+            style="
+                margin:0 0 28px;
+                color:#aaa;
+                font-size:18px;
+            "
+        >
+            ${track.artist}
+        </p>
+
+
+        <button
+            id="echoFullscreenPlay"
+            style="
+                width:70px;
+                height:70px;
+                border:0;
+                border-radius:50%;
+                background:#fff;
+                color:#111;
+                font-size:25px;
+                cursor:pointer;
+            "
+        >
+            <i class="fa-solid fa-pause"></i>
+        </button>
+
+    `;
+
+
+    document.body.appendChild(
+        fullscreenOverlay
+    );
+
+
+    const closeBtn =
+        document.getElementById(
+            'echoFullscreenClose'
+        );
+
+    const fsPlay =
+        document.getElementById(
+            'echoFullscreenPlay'
+        );
+
+
+    function updateFullscreenPlayer() {
+
+        if (!fullscreenOverlay) return;
+
+        const current =
+            currentQueue[currentIndex];
+
+        if (!current) return;
+
+
+        const cover =
+            document.getElementById(
+                'echoFullscreenCover'
+            );
+
+        const title =
+            document.getElementById(
+                'echoFullscreenTitle'
+            );
+
+        const artist =
+            document.getElementById(
+                'echoFullscreenArtist'
+            );
+
+        if (cover) {
+            cover.src = current.cover;
+        }
+
+        if (title) {
+            title.textContent =
+                current.title;
+        }
+
+        if (artist) {
+            artist.textContent =
+                current.artist;
+        }
+
+        if (fsPlay) {
+
+            fsPlay.innerHTML =
+                isPlaying
+                    ? '<i class="fa-solid fa-pause"></i>'
+                    : '<i class="fa-solid fa-play"></i>';
+
+        }
+
+    }
+
+
+    function closeFullscreen() {
+
+        if (
+            document.fullscreenElement &&
+            document.exitFullscreen
+        ) {
+
+            document.exitFullscreen()
+                .catch(() => {});
+
+        }
+
+        if (fullscreenOverlay) {
+
+            fullscreenOverlay.remove();
+            fullscreenOverlay = null;
+
+        }
+
+    }
+
+
+    closeBtn.addEventListener(
+        'click',
+        closeFullscreen
+    );
+
+
+    fsPlay.addEventListener('click', () => {
+
+        togglePlayPause();
+
+        setTimeout(
+            updateFullscreenPlayer,
+            50
+        );
+
+    });
+
+
+    // Update fullscreen display when songs change
+    audioPlayer.addEventListener(
+        'loadedmetadata',
+        updateFullscreenPlayer
+    );
+
+
+    // Open actual browser fullscreen
+    if (fullscreenOverlay.requestFullscreen) {
+
+        fullscreenOverlay
+            .requestFullscreen()
+            .catch(() => {});
+
+    }
+
+}
+
+
+// Both fullscreen buttons:
+// - Now Playing fullscreen
+// - Bottom player fullscreen
+document.addEventListener('click', (event) => {
+
+    const expandButton =
+        event.target.closest('.fa-expand');
+
+    if (!expandButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    openSongFullscreen();
+
+});
+
+
+// Escape / browser fullscreen exit
+document.addEventListener(
+    'fullscreenchange',
+    () => {
+
+        if (
+            !document.fullscreenElement &&
+            fullscreenOverlay
+        ) {
+
+            fullscreenOverlay.remove();
+            fullscreenOverlay = null;
+
+        }
+
+    }
+);
+
+
+// ---------------------------------------------------------------------
+// 8. MAKE HOME WORK FROM ANY CURRENT VIEW
+// ---------------------------------------------------------------------
+
+document.addEventListener('keydown', (event) => {
+
+    // Escape from a playlist/profile/settings returns home
+    if (
+        event.key === 'Escape' &&
+        !document.fullscreenElement
+    ) {
+
+        if (
+            playlistView &&
+            !playlistView.hidden
+        ) {
+
+            goHome();
+
+        } else if (
+            profileView &&
+            !profileView.hidden
+        ) {
+
+            goHome();
+
+        } else if (
+            settingsView &&
+            !settingsView.hidden
+        ) {
+
+            goHome();
+
+        }
+
+    }
+
+});
+
+
+// Initial UI state
+refreshLikeIcons();
+updateVolumeIcon();
+
+console.log(
+    'EchoBeat interactive controls loaded successfully.'
+);
