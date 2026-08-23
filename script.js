@@ -726,12 +726,139 @@ phoneForm.addEventListener('submit', (e) => {
 });
 
 // =====================================================================
-// Sign up link
+// Sign Up Page
 // =====================================================================
 
+// Open sign up page
 document.getElementById('signupLink').addEventListener('click', (e) => {
     e.preventDefault();
-    showToast('Sign up flow would open here');
+
+    loginPage.style.display = 'none';
+    signupPage.style.display = 'flex';
+    signupForm.reset();
+});
+
+
+// Go back to login page
+document.getElementById('loginLink').addEventListener('click', (e) => {
+    e.preventDefault();
+
+    signupPage.style.display = 'none';
+    loginPage.style.display = 'flex';
+});
+
+
+// Show / hide sign up password
+signupTogglePass.addEventListener('click', () => {
+    const hidden = signupPassword.type === 'password';
+
+    signupPassword.type = hidden ? 'text' : 'password';
+    signupTogglePass.textContent = hidden ? 'Hide' : 'Show';
+});
+
+
+// Show / hide confirm password
+confirmTogglePass.addEventListener('click', () => {
+    const hidden = confirmPassword.type === 'password';
+
+    confirmPassword.type = hidden ? 'text' : 'password';
+    confirmTogglePass.textContent = hidden ? 'Hide' : 'Show';
+});
+
+
+// Sign up form submission
+signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    let valid = true;
+
+    const name = signupName.value.trim();
+    const email = signupEmail.value.trim();
+    const password = signupPassword.value;
+    const confirm = confirmPassword.value;
+
+
+    // Validate name
+    if (!name) {
+        setError(signupName, signupNameError, 'Please enter your name.');
+        valid = false;
+    } else {
+        clearError(signupName, signupNameError);
+    }
+
+
+    // Validate Gmail
+    if (!email) {
+        setError(signupEmail, signupEmailError, 'Please enter your Gmail address.');
+        valid = false;
+    } else if (!GMAIL_REGEX.test(email)) {
+        setError(
+            signupEmail,
+            signupEmailError,
+            'Please enter a valid Gmail address.'
+        );
+        valid = false;
+    } else {
+        clearError(signupEmail, signupEmailError);
+    }
+
+
+    // Validate password
+    if (password.length < 6) {
+        setError(
+            signupPassword,
+            signupPasswordError,
+            'Password must be at least 6 characters.'
+        );
+        valid = false;
+    } else {
+        clearError(signupPassword, signupPasswordError);
+    }
+
+
+    // Validate confirm password
+    if (confirm !== password || !confirm) {
+        setError(
+            confirmPassword,
+            confirmPasswordError,
+            'Passwords do not match.'
+        );
+        valid = false;
+    } else {
+        clearError(confirmPassword, confirmPasswordError);
+    }
+
+
+    if (!valid) return;
+
+
+    // Save account locally for this demo project
+    const user = {
+        name: name,
+        email: email,
+        password: password
+    };
+
+    localStorage.setItem('echobeat_user', JSON.stringify(user));
+
+
+    // Show loading state
+    signupSubmitBtn.disabled = true;
+    signupSubmitBtn.textContent = 'Creating account...';
+
+
+    setTimeout(() => {
+        showToast('Welcome to EchoBeat, ' + name + '! 🎧');
+
+        signupForm.reset();
+
+        signupSubmitBtn.disabled = false;
+        signupSubmitBtn.textContent = 'Sign up';
+
+        // Automatically log the new user in
+        enterApp(email, 'signup');
+
+    }, 1000);
 });
 
 // =====================================================================
