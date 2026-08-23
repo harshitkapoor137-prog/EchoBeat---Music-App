@@ -952,32 +952,37 @@ document.getElementById('signupLink').addEventListener('click', (e) => {
     signupForm.reset();
 });
 
-
 // Go back to login page
-document.getElementById('loginLink').addEventListener('click', (e) => {
-    e.preventDefault();
+const loginLinkElement = document.getElementById('loginLink');
 
-    signupPage.style.display = 'none';
-    loginPage.style.display = 'flex';
-});
+if (loginLinkElement) {
+    loginLinkElement.addEventListener('click', (e) => {
+        e.preventDefault();
 
+        signupPage.style.display = 'none';
+        loginPage.style.display = 'flex';
+    });
+}
 
 // Show / hide sign up password
-signupTogglePass.addEventListener('click', () => {
-    const hidden = signupPassword.type === 'password';
+if (signupTogglePass) {
+    signupTogglePass.addEventListener('click', () => {
+        const hidden = signupPassword.type === 'password';
 
-    signupPassword.type = hidden ? 'text' : 'password';
-    signupTogglePass.textContent = hidden ? 'Hide' : 'Show';
-});
-
+        signupPassword.type = hidden ? 'text' : 'password';
+        signupTogglePass.textContent = hidden ? 'Hide' : 'Show';
+    });
+}
 
 // Show / hide confirm password
-confirmTogglePass.addEventListener('click', () => {
-    const hidden = confirmPassword.type === 'password';
+if (confirmTogglePass) {
+    confirmTogglePass.addEventListener('click', () => {
+        const hidden = confirmPassword.type === 'password';
 
-    confirmPassword.type = hidden ? 'text' : 'password';
-    confirmTogglePass.textContent = hidden ? 'Hide' : 'Show';
-});
+        confirmPassword.type = hidden ? 'text' : 'password';
+        confirmTogglePass.textContent = hidden ? 'Hide' : 'Show';
+    });
+}
 
 
 // Sign up form submission
