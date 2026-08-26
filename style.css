@@ -75,7 +75,7 @@ body{
     background:#000;
     display:flex;
     flex-direction:column;
-    justify-content:space-between;
+    justify-content:flex-start;
     align-items:center;
     padding:12px 0;
     border-right:1px solid #1f1f1f;
@@ -85,7 +85,7 @@ body{
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:10px;
+    gap:4px;
 }
 
 .dot-menu{
@@ -436,6 +436,7 @@ i{
 .right-sidebar-header h2{
     font-size:17px;
     font-weight:700;
+    color:#fff;
 }
 
 .right-sidebar-actions{
@@ -485,6 +486,7 @@ i{
     font-weight:700;
     margin-bottom:8px;
     line-height:1.25;
+    color: #fff;
 }
 
 .song-text p{
@@ -732,6 +734,7 @@ i{
 .track-details h4{
     font-size:14px;
     font-weight:600;
+    color: #fff;
 }
 
 .track-details p{
@@ -936,9 +939,9 @@ i{
 
 /* ================= RECOMMENDATION SECTION ================= */
 
-.popular-header h2,
-.recents-header h2,
-.artist-header h2{
+.popular-header h3,
+.recents-header h3,
+.artist-header h3{
     font-size:24px;
     font-weight:700;
     color:#fff;
@@ -950,17 +953,24 @@ i{
     padding:10px 0 15px;
     scrollbar-width:none;
 }
+
 .slider::-webkit-scrollbar{
     display:none;
+}
+
+.slider .card{
+    flex:0 0 220px;
+    width:220px;
 }
 
 .card:hover{
     background:#282828;
 }
 
-.card img{
-    width:100%;
-    height:auto;
+.slider .card img{
+    width:220px;
+    height:220px;
+    display:block;
     border-radius:10px;
     object-fit:cover;
 }
@@ -1064,6 +1074,7 @@ i{
 .podcast-info h3{
     font-size:24px;
     margin-bottom:8px;
+    color: #fff;
 }
 
 .podcast-info span{
@@ -2594,4 +2605,4 @@ html[data-theme="light"] .volume-fill{
     margin: 0;
     color: #999;
     font-size: 14px;
-}
+}}
