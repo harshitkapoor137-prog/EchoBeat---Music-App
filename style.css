@@ -190,8 +190,7 @@ body{
     gap:12px;
 }
 
-.nav-btn,
-.home-btn{
+.nav-btn{
     width:42px;
     height:42px;
     border-radius:50%;
@@ -203,11 +202,17 @@ body{
     transition:background .25s,transform .25s;
 }
 
-.nav-btn:hover,
-.home-btn:hover{
-    background:#303030;
-    transform:scale(1.05);
+.nav-btn i{
+    color:#b3b3b3;
 }
+
+.nav-btn:hover,
+
+
+.nav-btn:hover i{
+    color:#fff;
+}
+
 
 .header-center{
     flex:1;
@@ -568,6 +573,7 @@ i{
 
 .artist-top h3{
     font-size:24px;
+    color:#fff
 }
 
 .follow-btn{
@@ -610,10 +616,12 @@ i{
     justify-content:space-between;
     align-items:center;
     margin-bottom:18px;
+    color:#fff;
 }
 
 .card-header h3{
     font-size:17px;
+    color:#fff;
 }
 
 .card-header a{
@@ -640,6 +648,7 @@ i{
 
 .credit-item h4{
     margin-bottom:4px;
+    color:#fff;
 }
 
 .credit-item p{
@@ -677,6 +686,7 @@ i{
     align-items:center;
     gap:14px;
     padding:10px 0;
+    color:#fff;
 }
 
 .queue-item img{
@@ -1568,6 +1578,7 @@ i{
     font-weight:800;
     margin:8px 0 10px;
     line-height:1.1;
+    color:#fff;
 }
 
 .playlist-hero p{
@@ -1747,6 +1758,7 @@ i{
     font-size:26px;
     font-weight:700;
     word-break:break-all;
+    color:#fff;
 }
 
 .profile-sub{
@@ -1760,6 +1772,7 @@ i{
     font-size:30px;
     font-weight:800;
     margin-bottom:24px;
+    color:#fff;
 }
 
 .setting-row{
@@ -1774,6 +1787,7 @@ i{
 .setting-row h4{
     font-size:15px;
     margin-bottom:4px;
+    color:#fff;
 }
 
 .setting-row p{
