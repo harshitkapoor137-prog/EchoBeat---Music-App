@@ -158,6 +158,42 @@ const SHUFFLE_SONGS = [
     { title: 'London Thumakda', artist: 'Labh Janjua, Sonu Kakkar, Neha Kakkar' },
 ];
 
+const CUSTOM_PLAYLISTS_KEY = 'echobeat_user_playlists';
+
+// Distinct cover photos already present in the EchoBeat image folder.
+// Custom playlists get their own cover, rather than all reusing MyPlaylist.jpg.
+const CUSTOM_PLAYLIST_COVERS = [
+    'image/trending.jpg',
+    'image/ariana album.jpg',
+    'image/grwm.jpg',
+    'image/atif album.jpg',
+    'image/Happy vibes.jpg',
+    'image/All the Stars.jpg',
+    'image/Starboy.jpg',
+    'image/Blinding lights.jpg',
+    'image/Save your tears.jpg',
+    'image/Less than Zero.jpg',
+    'image/Arjit singh.jpeg',
+    'image/Diljit.jpeg',
+    'image/Shreya.jpeg',
+    'image/Atif.jpeg',
+    'image/Karan Aujla.jpeg'
+];
+
+function getNextPlaylistCover() {
+    const usedCovers = new Set(
+        Object.values(PLAYLISTS || {}).map((playlist) => playlist.cover)
+    );
+    const availableCover = CUSTOM_PLAYLIST_COVERS.find((cover) => !usedCovers.has(cover));
+    if (availableCover) return availableCover;
+
+    // If the user creates more playlists than available local cover photos,
+    // use a song cover from the catalogue as a fallback.
+    const tracks = typeof getAllAvailableTracks === 'function' ? getAllAvailableTracks() : [];
+    const trackCover = tracks.map((track) => track.cover).find((cover) => cover && !usedCovers.has(cover));
+    return trackCover || CUSTOM_PLAYLIST_COVERS[usedCovers.size % CUSTOM_PLAYLIST_COVERS.length];
+}
+
 const PLAYLISTS = {
     myplaylist7: {
         title: 'My Playlist #7',
@@ -173,9 +209,53 @@ const PLAYLISTS = {
         tracks: LIKED_ORDER.map((songIndex) =>
             trackFrom(CORE_SONGS[songIndex].title, CORE_SONGS[songIndex].artist)),
     },
+    saved: {
+        title: 'Saved Songs',
+        cover: 'image/Liked.jpg',
+        tracks: [],
+    },
     poppart: { title: 'Pop-Party', cover: 'image/Pop.jpg', tracks: tracksFromList(POP_SONGS) },
     ishq: { title: 'Ishq Di Baajiyaan Radio', cover: 'image/Ishq.jpg', tracks: tracksFromList(ISHQ_SONGS) },
 };
+
+// Restore playlists created by the signed-in user. New users start with none.
+function loadCustomPlaylists() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(CUSTOM_PLAYLISTS_KEY)) || [];
+        const usedCustomCovers = new Set();
+
+        saved.forEach((playlist) => {
+            if (!playlist || !playlist.key || !playlist.title || !Array.isArray(playlist.tracks)) return;
+
+            let cover = playlist.cover || 'image/MyPlaylist.jpg';
+            if (usedCustomCovers.has(cover)) {
+                const replacement = CUSTOM_PLAYLIST_COVERS.find((candidate) =>
+                    !usedCustomCovers.has(candidate) &&
+                    !Object.entries(PLAYLISTS).some(([key, item]) => key !== playlist.key && item.cover === candidate)
+                );
+                if (replacement) cover = replacement;
+            }
+            usedCustomCovers.add(cover);
+
+            PLAYLISTS[playlist.key] = {
+                title: playlist.title,
+                cover,
+                tracks: playlist.tracks,
+                isCustom: true
+            };
+        });
+
+        // Persist repaired cover assignments so each saved playlist keeps its own art.
+        const custom = Object.entries(PLAYLISTS)
+            .filter(([, playlist]) => playlist.isCustom)
+            .map(([key, playlist]) => ({ key, title: playlist.title, cover: playlist.cover, tracks: playlist.tracks }));
+        localStorage.setItem(CUSTOM_PLAYLISTS_KEY, JSON.stringify(custom));
+    } catch {
+        localStorage.removeItem(CUSTOM_PLAYLISTS_KEY);
+    }
+}
+
+loadCustomPlaylists();
 
 // "Thinking Out Loud" and "Notion" are single tracks, not playlists —
 // clicking their quick-card plays them directly instead of opening the
@@ -204,6 +284,67 @@ function saveLikedSongs(songs) {
         LIKED_SONGS_KEY,
         JSON.stringify(songs)
     );
+}
+
+const SAVED_SONGS_KEY = 'echobeat_saved_songs';
+
+function getSavedSongs() {
+    try {
+        return JSON.parse(localStorage.getItem(SAVED_SONGS_KEY)) || [];
+    } catch {
+        return [];
+    }
+}
+
+function saveSavedSongs(songs) {
+    localStorage.setItem(SAVED_SONGS_KEY, JSON.stringify(songs));
+}
+
+function getDynamicSavedTracks() {
+    const allTracks = getAllAvailableTracks();
+    return getSavedSongs().map((saved) => {
+        const title = typeof saved === 'string' ? saved : saved.title;
+        const artist = typeof saved === 'string' ? null : saved.artist;
+        return allTracks.find(track => track.title === title && (!artist || track.artist === artist));
+    }).filter(Boolean);
+}
+
+function trackIsSaved(track) {
+    return getSavedSongs().some(item =>
+        (typeof item === 'string' ? item === track.title : item.title === track.title && item.artist === track.artist)
+    );
+}
+
+function toggleSavedTrack(track) {
+    const saved = getSavedSongs();
+    const index = saved.findIndex(item =>
+        (typeof item === 'string' ? item === track.title : item.title === track.title && item.artist === track.artist)
+    );
+    if (index >= 0) {
+        saved.splice(index, 1);
+        showToast(`Removed "${track.title}" from Saved Songs`);
+    } else {
+        saved.push({ title: track.title, artist: track.artist });
+        showToast(`Saved "${track.title}"`);
+    }
+    saveSavedSongs(saved);
+    if (currentPlaylistKey === 'saved') openPlaylist('saved');
+    refreshLikeIcons();
+}
+
+function toggleLikedTrack(track) {
+    const liked = getLikedSongs();
+    const index = liked.indexOf(track.title);
+    if (index >= 0) {
+        liked.splice(index, 1);
+        showToast(`Removed "${track.title}" from Liked Songs`);
+    } else {
+        liked.push(track.title);
+        showToast(`Added "${track.title}" to Liked Songs`);
+    }
+    saveLikedSongs(liked);
+    refreshLikeIcons();
+    if (currentPlaylistKey === 'liked') openPlaylist('liked');
 }
 
 
@@ -266,6 +407,72 @@ function getDynamicLikedTracks() {
 }
 
 // =====================================================================
+// Recently played tracks are kept locally and rendered in the home Recents row.
+const RECENTS_KEY = 'echobeat_recent_tracks';
+const RECENT_STARTER_TRACKS = [
+    trackFrom('All The Stars', 'Kendrick Lamar, SZA'),
+    trackFrom('Starboy', 'The Weeknd'),
+    trackFrom('Blinding Lights', 'The Weeknd'),
+    trackFrom('Save Your Tears', 'The Weeknd'),
+    trackFrom('Less Than Zero', 'The Weeknd')
+];
+let showAllRecents = false;
+
+function getRecentTracks() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(RECENTS_KEY));
+        if (Array.isArray(saved) && saved.length) {
+            return saved.map((item) => trackFrom(item.title, item.artist)).filter((track) => track.title && track.artist);
+        }
+    } catch {}
+    return [...RECENT_STARTER_TRACKS];
+}
+
+function rememberRecentTrack(track) {
+    if (!track || !track.title) return;
+    let recent = [];
+    try {
+        const saved = JSON.parse(localStorage.getItem(RECENTS_KEY)) || [];
+        if (Array.isArray(saved)) recent = saved;
+    } catch {}
+    recent = recent.filter((item) => item.title !== track.title || item.artist !== track.artist);
+    recent.unshift({ title: track.title, artist: track.artist });
+    localStorage.setItem(RECENTS_KEY, JSON.stringify(recent.slice(0, 30)));
+    renderRecents();
+}
+
+function renderRecents() {
+    const slider = document.getElementById('recentsSlider');
+    const showAllLink = document.getElementById('recentsShowAll');
+    if (!slider) return;
+    const tracks = getRecentTracks();
+    const visibleTracks = showAllRecents ? tracks : tracks.slice(0, 5);
+    slider.innerHTML = '';
+    visibleTracks.forEach((track) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'card recent-track-card';
+        card.setAttribute('aria-label', `Play ${track.title} by ${track.artist}`);
+        const image = document.createElement('img');
+        image.src = track.cover;
+        image.alt = `${track.title} cover`;
+        image.loading = 'lazy';
+        image.onerror = () => { image.src = 'image/All the Stars.jpg'; };
+        const title = document.createElement('h3');
+        title.textContent = track.title;
+        const artist = document.createElement('p');
+        artist.textContent = track.artist;
+        card.append(image, title, artist);
+        card.addEventListener('click', () => {
+            currentPlaylistKey = null;
+            playQueue([track], 0);
+            showToast(`Playing ${track.title}`);
+        });
+        slider.appendChild(card);
+    });
+    if (showAllLink) showAllLink.textContent = showAllRecents ? 'Show less' : 'Show All';
+}
+
 // Player state
 // =====================================================================
 
@@ -274,6 +481,12 @@ let currentPlaylistKey = null;
 let currentQueue = [];
 let currentIndex = -1;
 let isPlaying = false;
+
+// Keep Recents synced to tracks that actually begin playback, regardless of entry point.
+audioPlayer.addEventListener('play', () => {
+    const track = currentQueue[currentIndex];
+    if (track) rememberRecentTrack(track);
+});
 
 function formatTime(seconds) {
     if (!isFinite(seconds) || seconds < 0) return '0:00';
@@ -310,6 +523,7 @@ function loadTrack(index, autoplay) {
     audioPlayer.src = track.audio;
     audioPlayer.currentTime = 0;
     renderNowPlaying(track);
+    rememberRecentTrack(track);
 
     if (autoplay) {
         audioPlayer.play().catch(() => {});
@@ -423,11 +637,38 @@ if (videoModalClose) {
 // View routing (home / playlist / profile / settings)
 // =====================================================================
 
-function showView(view) {
-    [homeView, playlistView, profileView, settingsView].forEach((v) => {
-        if (v) v.hidden = (v !== view);
+let currentAppView = homeView;
+const appViewHistory = [];
+
+function showView(view, recordHistory = true) {
+    if (!view) return;
+
+    if (recordHistory && currentAppView && currentAppView !== view) {
+        appViewHistory.push(currentAppView);
+        if (appViewHistory.length > 30) appViewHistory.shift();
+    }
+
+    [homeView, playlistView, profileView, settingsView].forEach((item) => {
+        if (!item) return;
+        const shouldHide = item !== view;
+        item.hidden = shouldHide;
+        item.toggleAttribute('hidden', shouldHide);
+        item.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
     });
-    if (view) view.scrollTop = 0;
+
+    currentAppView = view;
+    view.scrollTop = 0;
+    const content = document.querySelector('.content');
+    if (content) content.scrollTop = 0;
+}
+
+function goBackView() {
+    const previousView = appViewHistory.pop();
+    if (previousView && previousView !== currentAppView) {
+        showView(previousView, false);
+        return;
+    }
+    goHome();
 }
 
 function openPlaylist(key) {
@@ -438,10 +679,15 @@ function openPlaylist(key) {
     // Liked Songs is dynamic
     // ---------------------------------------------------------------
 
-    const tracks =
-        key === 'liked'
-            ? getDynamicLikedTracks()
+    const tracks = key === 'liked'
+        ? getDynamicLikedTracks()
+        : key === 'saved'
+            ? getDynamicSavedTracks()
             : playlist.tracks;
+
+    if (searchInput) searchInput.value = '';
+    const playlistSearchField = document.getElementById('playlistSearchInput');
+    if (playlistSearchField) playlistSearchField.value = '';
 
 
     currentPlaylistKey = key;
@@ -453,6 +699,14 @@ function openPlaylist(key) {
     // Playlist title
     playlistTitle.textContent = playlist.title;
 
+    const addSongsBtn = document.getElementById('addSongsBtn');
+    if (addSongsBtn) addSongsBtn.hidden = !playlist.isCustom;
+    const playlistManagement = document.getElementById('playlistManagement');
+    const playlistManagementMenu = document.getElementById('playlistManagementMenu');
+    const playlistManagementTrigger = document.getElementById('playlistManagementTrigger');
+    if (playlistManagement) playlistManagement.hidden = !playlist.isCustom;
+    if (playlistManagementMenu) playlistManagementMenu.hidden = true;
+    if (playlistManagementTrigger) playlistManagementTrigger.setAttribute('aria-expanded', 'false');
 
     // Dynamic song count
     playlistMeta.textContent =
@@ -496,6 +750,33 @@ function openPlaylist(key) {
     }
 
 
+    if (key === 'saved' && tracks.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'liked-empty-state';
+        emptyState.innerHTML = '<i class="fa-solid fa-box-archive"></i><h3>No saved songs yet</h3><p>Songs you save will appear here.</p>';
+        trackListEl.appendChild(emptyState);
+        showView(playlistView);
+        return;
+    }
+
+    // ---------------------------------------------------------------
+    // Empty user-created playlist state
+    // ---------------------------------------------------------------
+
+    if (playlist.isCustom && tracks.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'playlist-empty-state';
+        emptyState.innerHTML = `
+            <i class="fa-solid fa-music"></i>
+            <h3>Your playlist is ready</h3>
+            <p><strong>${escapeHTML(playlist.title)}</strong> is empty for now. Add songs from your music catalogue to get started.</p>
+            <button type="button" class="empty-add-songs-btn" data-open-song-picker="${escapeHTML(key)}"><i class="fa-solid fa-plus"></i> Find songs</button>
+        `;
+        trackListEl.appendChild(emptyState);
+        showView(playlistView);
+        return;
+    }
+
     // ---------------------------------------------------------------
     // Render tracks
     // ---------------------------------------------------------------
@@ -537,11 +818,10 @@ function openPlaylist(key) {
                     </p>
                 </div>
             </div>
-            <span class="track-duration">
-                <i
-                    class="fa-regular fa-heart"
-                    title="Like"
-                ></i>
+            <span class="track-duration track-row-actions">
+                <button type="button" class="track-like-btn" data-track-title="${escapeHTML(track.title)}" data-track-artist="${escapeHTML(track.artist)}" aria-label="Like ${escapeHTML(track.title)}" title="Like song"><i class="${isSongLiked(track.title) ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
+                <button type="button" class="track-save-btn" data-track-title="${escapeHTML(track.title)}" data-track-artist="${escapeHTML(track.artist)}" aria-label="Save ${escapeHTML(track.title)}" title="Save song"><i class="${trackIsSaved(track) ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i></button>
+                <button type="button" class="track-more-btn" data-track-title="${escapeHTML(track.title)}" data-track-artist="${escapeHTML(track.artist)}" aria-label="More options for ${escapeHTML(track.title)}" title="More options"><i class="fa-solid fa-ellipsis"></i></button>
             </span>
         `;
 
@@ -551,10 +831,8 @@ function openPlaylist(key) {
 
         row.addEventListener(
             'click',
-            () => {
-
-                // Important:
-                // Use THIS playlist's actual track list.
+            (event) => {
+                if (event.target.closest('.track-more-btn, .track-like-btn, .track-save-btn')) return;
                 playQueue(tracks, idx);
             }
         );
@@ -564,15 +842,395 @@ function openPlaylist(key) {
     showView(playlistView);
 }
 
-document.querySelectorAll('.quick-card[data-playlist]').forEach((card) => {
-    card.addEventListener('click', () => {
-        const key = card.dataset.playlist;
-        if (SINGLE_TRACKS[key]) {
-            playSingleTrack(key);
-        } else {
-            openPlaylist(key);
-        }
+const homeQuickLinks = document.getElementById('homeQuickLinks');
+
+if (homeQuickLinks) {
+    homeQuickLinks.addEventListener('click', (event) => {
+        const card = event.target.closest('.quick-card[data-playlist]');
+        if (!card) return;
+        openPlaylist(card.dataset.playlist);
     });
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+}
+
+function saveCustomPlaylists() {
+    const custom = Object.entries(PLAYLISTS)
+        .filter(([, playlist]) => playlist.isCustom)
+        .map(([key, playlist]) => ({
+            key,
+            title: playlist.title,
+            cover: playlist.cover,
+            tracks: playlist.tracks
+        }));
+    localStorage.setItem(CUSTOM_PLAYLISTS_KEY, JSON.stringify(custom));
+}
+
+function renderUserPlaylists() {
+    const sidebar = document.getElementById('userPlaylistSidebar');
+    const quickLinks = document.getElementById('homeQuickLinks');
+    if (!sidebar || !quickLinks) return;
+
+    sidebar.replaceChildren();
+    quickLinks.replaceChildren();
+
+    const likedCard = document.createElement('div');
+    likedCard.className = 'quick-card';
+    likedCard.dataset.playlist = 'liked';
+    likedCard.innerHTML = '<img src="image/Liked.jpg" alt=""><span>Liked Songs</span>';
+    quickLinks.appendChild(likedCard);
+
+    Object.entries(PLAYLISTS).forEach(([key, playlist]) => {
+        if (!playlist.isCustom) return;
+
+        const image = document.createElement('button');
+        image.type = 'button';
+        image.className = 'playlist user-playlist-item';
+        image.title = playlist.title;
+        image.setAttribute('aria-label', `Open playlist ${playlist.title}`);
+        image.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt="">`;
+        image.addEventListener('click', () => openPlaylist(key));
+        sidebar.appendChild(image);
+
+        const card = document.createElement('div');
+        card.className = 'quick-card';
+        card.dataset.playlist = key;
+        card.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt=""><span>${escapeHTML(playlist.title)}</span>`;
+        quickLinks.appendChild(card);
+    });
+}
+
+function showEchoBeatDialog({ eyebrow = 'YOUR MUSIC', title, message, confirmText = 'Confirm', cancelText = 'Cancel', danger = false, onConfirm }) {
+    let modal = document.getElementById('echoBeatActionDialog');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'echoBeatActionDialog';
+        modal.className = 'echo-dialog-backdrop';
+        modal.hidden = true;
+        modal.innerHTML = `
+            <section class="echo-dialog" role="dialog" aria-modal="true" aria-labelledby="echoDialogTitle" aria-describedby="echoDialogMessage">
+                <button class="echo-dialog-close" type="button" aria-label="Close dialog"><i class="fa-solid fa-xmark"></i></button>
+                <div class="echo-dialog-eyebrow"></div>
+                <h2 id="echoDialogTitle"></h2>
+                <p id="echoDialogMessage"></p>
+                <div class="echo-dialog-actions">
+                    <button type="button" class="echo-dialog-cancel"></button>
+                    <button type="button" class="echo-dialog-confirm"></button>
+                </div>
+            </section>`;
+        document.body.appendChild(modal);
+    }
+    const close = () => {
+        modal.hidden = true;
+        document.removeEventListener('keydown', onKeyDown);
+    };
+    const cancelButton = modal.querySelector('.echo-dialog-cancel');
+    const confirmButton = modal.querySelector('.echo-dialog-confirm');
+    const closeButton = modal.querySelector('.echo-dialog-close');
+    modal.querySelector('.echo-dialog-eyebrow').textContent = eyebrow;
+    modal.querySelector('#echoDialogTitle').textContent = title;
+    modal.querySelector('#echoDialogMessage').textContent = message;
+    cancelButton.textContent = cancelText;
+    confirmButton.textContent = confirmText;
+    confirmButton.classList.toggle('is-danger', danger);
+    modal.hidden = false;
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') close();
+    };
+    cancelButton.onclick = close;
+    closeButton.onclick = close;
+    confirmButton.onclick = () => {
+        close();
+        if (typeof onConfirm === 'function') onConfirm();
+    };
+    modal.onclick = (event) => { if (event.target === modal) close(); };
+    document.addEventListener('keydown', onKeyDown);
+    confirmButton.focus();
+}
+
+function manageCurrentPlaylist(action) {
+    const key = currentPlaylistKey;
+    const playlist = PLAYLISTS[key];
+    if (!playlist || !playlist.isCustom) return;
+
+    if (action === 'rename') {
+        const enteredName = window.prompt('Enter the new playlist name:', playlist.title);
+        if (enteredName === null) return;
+        const newTitle = enteredName.trim().replace(/\s+/g, ' ');
+        if (!newTitle) {
+            showToast('Playlist name cannot be empty');
+            return;
+        }
+        const duplicate = Object.entries(PLAYLISTS).some(([otherKey, otherPlaylist]) =>
+            otherKey !== key && otherPlaylist.title.trim().replace(/\s+/g, ' ').toLocaleLowerCase() === newTitle.toLocaleLowerCase()
+        );
+        if (duplicate) {
+            showToast('A playlist with that name already exists');
+            return;
+        }
+        playlist.title = newTitle;
+        saveCustomPlaylists();
+        renderUserPlaylists();
+        if (playlistTitle) playlistTitle.textContent = newTitle;
+        showToast(`Playlist renamed to ${newTitle}`);
+        return;
+    }
+
+    if (action === 'delete') {
+        const oldTitle = playlist.title;
+        showEchoBeatDialog({
+            eyebrow: 'PLAYLIST MANAGEMENT',
+            title: 'Delete playlist?',
+            message: `Delete "${oldTitle}"? This cannot be undone.`,
+            confirmText: 'Delete playlist',
+            danger: true,
+            onConfirm: () => {
+                delete PLAYLISTS[key];
+                saveCustomPlaylists();
+                renderUserPlaylists();
+                goHome();
+                showToast(`Deleted ${oldTitle}`);
+            }
+        });
+    }
+}
+
+const createPlaylistModal = document.getElementById('createPlaylistModal');
+const createPlaylistForm = document.getElementById('createPlaylistForm');
+const newPlaylistName = document.getElementById('newPlaylistName');
+const closeCreatePlaylistBtn = document.getElementById('closeCreatePlaylistBtn');
+const cancelCreatePlaylistBtn = document.getElementById('cancelCreatePlaylistBtn');
+
+function closeCreatePlaylistModal() {
+    if (createPlaylistModal) createPlaylistModal.hidden = true;
+    if (createPlaylistForm) createPlaylistForm.reset();
+}
+
+function createUserPlaylist() {
+    if (!createPlaylistModal || !newPlaylistName) return;
+    createPlaylistModal.hidden = false;
+    newPlaylistName.value = '';
+    window.setTimeout(() => newPlaylistName.focus(), 0);
+}
+
+function submitNewPlaylist(event) {
+    event.preventDefault();
+    const title = (newPlaylistName?.value || '').trim().replace(/\s+/g, ' ');
+    if (!title) {
+        showToast('Please enter a playlist name');
+        newPlaylistName?.focus();
+        return;
+    }
+
+    const normalizedTitle = title.toLocaleLowerCase();
+    const duplicate = Object.values(PLAYLISTS).some((playlist) =>
+        playlist.title.trim().replace(/\s+/g, ' ').toLocaleLowerCase() === normalizedTitle
+    );
+    if (duplicate) {
+        showToast('A playlist with that name already exists. Choose a different name.');
+        newPlaylistName?.focus();
+        newPlaylistName?.select();
+        return;
+    }
+
+    const key = `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    PLAYLISTS[key] = {
+        title,
+        cover: getNextPlaylistCover(),
+        tracks: [],
+        isCustom: true
+    };
+
+    saveCustomPlaylists();
+    renderUserPlaylists();
+    closeCreatePlaylistModal();
+    openPlaylist(key);
+    showToast(`Created ${title}`);
+}
+
+if (createPlaylistForm) createPlaylistForm.addEventListener('submit', submitNewPlaylist);
+if (closeCreatePlaylistBtn) closeCreatePlaylistBtn.addEventListener('click', closeCreatePlaylistModal);
+if (cancelCreatePlaylistBtn) cancelCreatePlaylistBtn.addEventListener('click', closeCreatePlaylistModal);
+if (createPlaylistModal) {
+    createPlaylistModal.addEventListener('click', (event) => {
+        if (event.target === createPlaylistModal) closeCreatePlaylistModal();
+    });
+}
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && createPlaylistModal && !createPlaylistModal.hidden) {
+        closeCreatePlaylistModal();
+    }
+});
+
+const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+if (createPlaylistBtn) {
+    createPlaylistBtn.addEventListener('click', createUserPlaylist);
+}
+
+// =====================================================================
+// Add songs to user-created playlists (Spotify-style Add to playlist flow)
+// =====================================================================
+const songPickerModal = document.getElementById('songPickerModal');
+const songPickerTarget = document.getElementById('songPickerTarget');
+const songPickerSearch = document.getElementById('songPickerSearch');
+const songPickerList = document.getElementById('songPickerList');
+const closeSongPickerBtn = document.getElementById('closeSongPickerBtn');
+const addSongsBtn = document.getElementById('addSongsBtn');
+let songPickerPreferredTrack = null;
+
+function openSongPicker(targetKey = null, preferredTrack = null) {
+    if (!songPickerModal || !songPickerTarget || !songPickerList) return;
+
+    const customEntries = Object.entries(PLAYLISTS).filter(([, playlist]) => playlist.isCustom);
+    if (!customEntries.length) {
+        showToast('Create a playlist first using the + button');
+        return;
+    }
+
+    songPickerTarget.innerHTML = customEntries.map(([key, playlist]) =>
+        `<option value="${escapeHTML(key)}">${escapeHTML(playlist.title)}</option>`
+    ).join('');
+
+    const usableTarget = targetKey && PLAYLISTS[targetKey]?.isCustom
+        ? targetKey
+        : (currentPlaylistKey && PLAYLISTS[currentPlaylistKey]?.isCustom ? currentPlaylistKey : customEntries[0][0]);
+    songPickerTarget.value = usableTarget;
+    songPickerPreferredTrack = preferredTrack;
+    songPickerSearch.value = preferredTrack ? preferredTrack.title : '';
+    songPickerModal.hidden = false;
+    renderSongPickerTracks();
+    if (!preferredTrack) songPickerSearch.focus();
+}
+
+function renderSongPickerTracks() {
+    if (!songPickerList || !songPickerTarget) return;
+    const targetKey = songPickerTarget.value;
+    const targetPlaylist = PLAYLISTS[targetKey];
+    const query = (songPickerSearch?.value || '').trim().toLowerCase();
+    const allTracks = getAllAvailableTracks();
+    const filteredTracks = allTracks.filter((track) =>
+        `${track.title} ${track.artist}`.toLowerCase().includes(query)
+    );
+
+    if (!filteredTracks.length) {
+        songPickerList.innerHTML = '<p class="song-picker-empty">No songs found. Try another search.</p>';
+        return;
+    }
+
+    songPickerList.innerHTML = filteredTracks.map((track) => {
+        const alreadyAdded = targetPlaylist?.tracks.some((item) => item.title === track.title && item.artist === track.artist);
+        const isPreferred = songPickerPreferredTrack && songPickerPreferredTrack.title === track.title && songPickerPreferredTrack.artist === track.artist;
+        return `
+            <div class="song-picker-row">
+                <img src="${escapeHTML(track.cover)}" alt="" onerror="this.onerror=null;this.src='image/MyPlaylist.jpg'">
+                <div class="song-picker-track-info"><strong>${escapeHTML(track.title)}</strong><span>${escapeHTML(track.artist)}</span></div>
+                <button type="button" class="song-picker-add-btn" data-add-track-title="${escapeHTML(track.title)}" data-add-track-artist="${escapeHTML(track.artist)}" ${alreadyAdded ? 'disabled' : ''}>
+                    ${alreadyAdded ? 'Added' : (isPreferred ? 'Add song' : 'Add')}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function addTrackToPlaylist(trackTitle, trackArtist, targetKey) {
+    const playlist = PLAYLISTS[targetKey];
+    if (!playlist || !playlist.isCustom) {
+        showToast('Choose one of your playlists first');
+        return;
+    }
+
+    const track = getAllAvailableTracks().find((item) => item.title === trackTitle && item.artist === trackArtist);
+    if (!track) {
+        showToast('That song is not available in the catalogue yet');
+        return;
+    }
+
+    if (playlist.tracks.some((item) => item.title === track.title && item.artist === track.artist)) {
+        showToast(`${track.title} is already in ${playlist.title}`);
+        renderSongPickerTracks();
+        return;
+    }
+
+    playlist.tracks.push({ ...track });
+    saveCustomPlaylists();
+    renderUserPlaylists();
+
+    if (currentPlaylistKey === targetKey) openPlaylist(targetKey);
+    showToast(`Added ${track.title} to ${playlist.title}`);
+    renderSongPickerTracks();
+}
+
+if (addSongsBtn) {
+    addSongsBtn.addEventListener('click', () => openSongPicker(currentPlaylistKey));
+}
+
+if (songPickerTarget) songPickerTarget.addEventListener('change', renderSongPickerTracks);
+if (songPickerSearch) songPickerSearch.addEventListener('input', renderSongPickerTracks);
+if (closeSongPickerBtn) closeSongPickerBtn.addEventListener('click', () => { songPickerModal.hidden = true; });
+if (songPickerModal) {
+    songPickerModal.addEventListener('click', (event) => {
+        if (event.target === songPickerModal) songPickerModal.hidden = true;
+        const addButton = event.target.closest('[data-add-track-title]');
+        if (addButton) addTrackToPlaylist(addButton.dataset.addTrackTitle, addButton.dataset.addTrackArtist, songPickerTarget.value);
+    });
+}
+
+function removeTrackFromPlaylist(playlistKey, track) {
+    const playlist = PLAYLISTS[playlistKey];
+    if (!playlist || !playlist.isCustom) return;
+    const index = playlist.tracks.findIndex(item => item.title === track.title && item.artist === track.artist);
+    if (index < 0) return;
+    playlist.tracks.splice(index, 1);
+    saveCustomPlaylists();
+    if (currentPlaylistKey === playlistKey) openPlaylist(playlistKey);
+    showToast(`Removed "${track.title}" from ${playlist.title}`);
+}
+
+// The empty playlist action opens the same searchable catalogue.
+document.addEventListener('click', (event) => {
+    const openButton = event.target.closest('[data-open-song-picker]');
+    if (openButton) openSongPicker(openButton.dataset.openSongPicker);
+
+    const likeButton = event.target.closest('.track-like-btn');
+    if (likeButton) {
+        event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
+        const track = getAllAvailableTracks().find(item => item.title === likeButton.dataset.trackTitle && item.artist === likeButton.dataset.trackArtist);
+        if (track) toggleLikedTrack(track);
+        return;
+    }
+
+    const saveButton = event.target.closest('.track-save-btn');
+    if (saveButton) {
+        event.preventDefault(); event.stopPropagation();
+        const track = getAllAvailableTracks().find(item => item.title === saveButton.dataset.trackTitle && item.artist === saveButton.dataset.trackArtist);
+        if (track) toggleSavedTrack(track);
+        return;
+    }
+
+    const moreButton = event.target.closest('.track-more-btn');
+    if (moreButton) {
+        event.preventDefault(); event.stopPropagation();
+        const title = moreButton.dataset.trackTitle;
+        const artist = moreButton.dataset.trackArtist;
+        const track = getAllAvailableTracks().find(item => item.title === title && item.artist === artist);
+        if (!track) return;
+        if (!PLAYLISTS[currentPlaylistKey]?.isCustom) {
+            showToast('Songs can only be removed from custom playlists');
+            return;
+        }
+        showEchoBeatDialog({
+            eyebrow: 'PLAYLIST ACTION',
+            title: 'Remove song from playlist?',
+            message: `Remove "${title}" from "${PLAYLISTS[currentPlaylistKey].title}"? The song will remain in your music library.`,
+            confirmText: 'Remove from playlist',
+            danger: true,
+            onConfirm: () => removeTrackFromPlaylist(currentPlaylistKey, track)
+        });
+    }
 });
 
 if (playAllBtn) {
@@ -585,9 +1243,7 @@ if (playAllBtn) {
                 ? getDynamicLikedTracks()
                 : playlist.tracks;
         if (!tracks.length) {
-            showToast(
-                'No liked songs to play'
-            );
+            showToast(currentPlaylistKey && PLAYLISTS[currentPlaylistKey]?.isCustom ? 'Add songs to this playlist first' : 'No liked songs to play');
             return;
         }
         playQueue(tracks, 0);
@@ -933,30 +1589,39 @@ document.getElementById('signupLink').addEventListener('click', (e) => {
 
 
 // Go back to login page
-document.getElementById('loginLink').addEventListener('click', (e) => {
-    e.preventDefault();
-
-    signupPage.style.display = 'none';
-    loginPage.style.display = 'flex';
-});
+const legacyLoginLink = document.getElementById('loginLink');
+if (legacyLoginLink) {
+    legacyLoginLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const signupPageElement = document.getElementById('signupPage');
+        if (signupPageElement) signupPageElement.style.display = 'none';
+        if (loginPage) loginPage.style.display = 'flex';
+    });
+}
 
 
 // Show / hide sign up password
-signupTogglePass.addEventListener('click', () => {
-    const hidden = signupPassword.type === 'password';
-
-    signupPassword.type = hidden ? 'text' : 'password';
-    signupTogglePass.textContent = hidden ? 'Hide' : 'Show';
-});
+const signupTogglePass = document.getElementById('signupTogglePass');
+const signupPassword = document.getElementById('signupPassword');
+if (signupTogglePass && signupPassword) {
+    signupTogglePass.addEventListener('click', () => {
+        const hidden = signupPassword.type === 'password';
+        signupPassword.type = hidden ? 'text' : 'password';
+        signupTogglePass.textContent = hidden ? 'Hide' : 'Show';
+    });
+}
 
 
 // Show / hide confirm password
-confirmTogglePass.addEventListener('click', () => {
-    const hidden = confirmPassword.type === 'password';
-
-    confirmPassword.type = hidden ? 'text' : 'password';
-    confirmTogglePass.textContent = hidden ? 'Hide' : 'Show';
-});
+const confirmTogglePass = document.getElementById('confirmTogglePass');
+const confirmPassword = document.getElementById('confirmPassword');
+if (confirmTogglePass && confirmPassword) {
+    confirmTogglePass.addEventListener('click', () => {
+        const hidden = confirmPassword.type === 'password';
+        confirmPassword.type = hidden ? 'text' : 'password';
+        confirmTogglePass.textContent = hidden ? 'Hide' : 'Show';
+    });
+}
 
 
 // Sign up form submission
@@ -1066,55 +1731,345 @@ restoreSession();
 // ---------------------------------------------------------------------
 
 function goHome() {
-    showView(homeView);
+    appViewHistory.length = 0;
+    renderUserPlaylists();
+    showView(homeView, false);
 
-    // Close profile dropdown if it is open
-    if (profileDropdown) {
-        profileDropdown.classList.remove('show');
+    // Explicitly restore the home view in case another handler changed its state.
+    if (homeView) {
+        homeView.hidden = false;
+        homeView.removeAttribute('hidden');
+        homeView.setAttribute('aria-hidden', 'false');
     }
+    if (playlistView) {
+        playlistView.hidden = true;
+        playlistView.setAttribute('hidden', '');
+        playlistView.setAttribute('aria-hidden', 'true');
+    }
+    if (profileView) {
+        profileView.hidden = true;
+        profileView.setAttribute('hidden', '');
+        profileView.setAttribute('aria-hidden', 'true');
+    }
+    if (settingsView) {
+        settingsView.hidden = true;
+        settingsView.setAttribute('hidden', '');
+        settingsView.setAttribute('aria-hidden', 'true');
+    }
+    currentAppView = homeView;
 
-    if (profileBtn) {
-        profileBtn.setAttribute('aria-expanded', 'false');
-    }
+    if (profileDropdown) profileDropdown.classList.remove('show');
+    if (profileBtn) profileBtn.setAttribute('aria-expanded', 'false');
+
+    const content = document.querySelector('.content');
+    if (content) content.scrollTo({ top: 0, behavior: 'auto' });
+    if (homeView) homeView.scrollTop = 0;
 }
 
-// Header Home button
-const headerHomeBtn = document.querySelector('.home-btn');
+// Expose stable navigation callbacks and bind in capture phase so the header
+// keeps working even if another app listener stops bubbling.
+window.echoBeatGoHome = goHome;
+window.echoBeatGoBack = goBackView;
+const headerHomeBtn = document.getElementById('homeNavBtn');
+const headerBackBtn = document.getElementById('backNavBtn');
 
 if (headerHomeBtn) {
-    headerHomeBtn.addEventListener('click', goHome);
+    headerHomeBtn.type = 'button';
+    headerHomeBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        goHome();
+    }, true);
+}
+if (headerBackBtn) {
+    headerBackBtn.type = 'button';
+    headerBackBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        goBackView();
+    }, true);
 }
 
-// Sidebar Home button
-const sidebarNavIcons = document.querySelectorAll('.top-icons .nav-icon');
+// A document-level capture handler ensures these navigation controls still
+// work if a nested component or stale handler interferes with button bubbling.
+document.addEventListener('click', (event) => {
+    const homeButton = event.target.closest('#homeNavBtn');
+    const backButton = event.target.closest('#backNavBtn');
+    if (homeButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        goHome();
+    } else if (backButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        goBackView();
+    }
+}, true);
 
-if (sidebarNavIcons.length > 0) {
-    const sidebarHomeBtn = sidebarNavIcons[0];
+// Spotify-like Home filters: All shows everything, Music hides podcasts,
+// and Podcasts focuses the podcast section.
+document.querySelectorAll('[data-home-filter]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const filter = button.dataset.homeFilter;
+        document.querySelectorAll('[data-home-filter]').forEach((pill) => pill.classList.toggle('active', pill === button));
+        document.querySelectorAll('.home-music-section').forEach((section) => { section.hidden = filter === 'podcasts'; });
+        document.querySelectorAll('.home-podcast-section').forEach((section) => { section.hidden = filter === 'music'; });
+        const quickLinks = document.getElementById('homeQuickLinks');
+        if (quickLinks) quickLinks.hidden = filter === 'podcasts';
+        const announcement = document.querySelector('.home-announcement');
+        if (announcement) announcement.hidden = filter === 'podcasts';
+    });
+});
 
-    sidebarHomeBtn.addEventListener('click', goHome);
+const POPULAR_RADIO_STATIONS = {
+    'the-weeknd': {
+        name: 'The Weeknd Radio',
+        songs: [
+            { title: 'Blinding Lights', artist: 'The Weeknd' },
+            { title: 'Starboy', artist: 'The Weeknd, Daft Punk' },
+            { title: 'Save Your Tears', artist: 'The Weeknd' },
+            { title: 'The Hills', artist: 'The Weeknd' },
+            { title: 'Die For You', artist: 'The Weeknd' },
+            { title: 'I Feel It Coming', artist: 'The Weeknd, Daft Punk' },
+            { title: "Can't Feel My Face", artist: 'The Weeknd' },
+            { title: 'Call Out My Name', artist: 'The Weeknd' },
+            { title: 'Often', artist: 'The Weeknd' },
+            { title: 'Sweater Weather', artist: 'The Neighbourhood' },
+            { title: 'Daddy Issues', artist: 'The Neighbourhood' },
+            { title: 'Do I Wanna Know?', artist: 'Arctic Monkeys' },
+            { title: "Why'd You Only Call Me When You're High?", artist: 'Arctic Monkeys' },
+            { title: 'Payphone', artist: 'Maroon 5, Wiz Khalifa' },
+            { title: 'Animals', artist: 'Maroon 5' }
+        ]
+    },
+    'english-pop': {
+        name: 'English Pop Party',
+        songs: [
+            { title: 'Levitating', artist: 'Dua Lipa' },
+            { title: "Don't Start Now", artist: 'Dua Lipa' },
+            { title: 'Dance The Night', artist: 'Dua Lipa' },
+            { title: 'As It Was', artist: 'Harry Styles' },
+            { title: 'Watermelon Sugar', artist: 'Harry Styles' },
+            { title: 'Late Night Talking', artist: 'Harry Styles' },
+            { title: 'Attention', artist: 'Charlie Puth' },
+            { title: "We Don't Talk Anymore", artist: 'Charlie Puth, Selena Gomez' },
+            { title: 'See You Again', artist: 'Wiz Khalifa, Charlie Puth' },
+            { title: 'Flowers', artist: 'Miley Cyrus' },
+            { title: 'Shape of You', artist: 'Ed Sheeran' },
+            { title: 'Cruel Summer', artist: 'Taylor Swift' }
+        ]
+    },
+    'hindi-party': {
+        name: 'Hindi Party Anthems',
+        songs: [
+            { title: 'Kala Chashma', artist: 'Amar Arshi, Badshah, Neha Kakkar' },
+            { title: 'Kar Gayi Chull', artist: 'Badshah, Amaal Mallik, Fazilpuria, Sukriti Kakar, Neha Kakkar' },
+            { title: 'Abhi Toh Party Shuru Hui Hai', artist: 'Badshah, Aastha Gill' },
+            { title: 'The Breakup Song', artist: 'Pritam, Arijit Singh, Badshah, Jonita Gandhi, Nakash Aziz' },
+            { title: 'London Thumakda', artist: 'Labh Janjua, Sonu Kakkar, Neha Kakkar' },
+            { title: 'Gallan Goodiyaan', artist: 'Yashita Sharma, Manish Kumar Tipu, Farhan Akhtar, Shankar Mahadevan, Sukhwinder Singh' },
+            { title: 'Badtameez Dil', artist: 'Benny Dayal, Shefali Alvares' },
+            { title: 'Ghungroo', artist: 'Arijit Singh, Shilpa Rao' },
+            { title: 'Nashe Si Chadh Gayi', artist: 'Arijit Singh' },
+            { title: 'Aankh Marey', artist: 'Neha Kakkar, Mika Singh, Kumar Sanu' },
+            { title: 'What Jhumka?', artist: 'Pritam, Arijit Singh, Jonita Gandhi' },
+            { title: 'Jhoome Jo Pathaan', artist: 'Arijit Singh, Sukriti Kakar, Vishal-Shekhar' }
+        ]
+    },
+    'punjabi-party': {
+        name: 'Punjabi Party Anthems',
+        songs: [
+            { title: 'Lover', artist: 'Diljit Dosanjh' },
+            { title: 'Born to Shine', artist: 'Diljit Dosanjh' },
+            { title: 'GOAT', artist: 'Diljit Dosanjh' },
+            { title: '52 Bars', artist: 'Karan Aujla' },
+            { title: 'Softly', artist: 'Karan Aujla' },
+            { title: 'Winning Speech', artist: 'Karan Aujla' },
+            { title: 'Insane', artist: 'AP Dhillon, Shinda Kahlon, Gurinder Gill' },
+            { title: 'Excuses', artist: 'AP Dhillon, Gurinder Gill' },
+            { title: 'Brown Munde', artist: 'AP Dhillon, Gurinder Gill, Shinda Kahlon' },
+            { title: 'We Rollin', artist: 'Shubh' },
+            { title: 'Cheques', artist: 'Shubh' },
+            { title: '295', artist: 'Sidhu Moose Wala' },
+            { title: 'So High', artist: 'Sidhu Moose Wala' }
+        ]
+    },
+    'grwm': {
+        name: 'GRWM',
+        songs: [
+            { title: 'Espresso', artist: 'Sabrina Carpenter' },
+            { title: 'Please Please Please', artist: 'Sabrina Carpenter' },
+            { title: 'Houdini', artist: 'Dua Lipa' },
+            { title: 'Levitating', artist: 'Dua Lipa' },
+            { title: 'Greedy', artist: 'Tate McRae' },
+            { title: 'Paint The Town Red', artist: 'Doja Cat' },
+            { title: 'Good as Hell', artist: 'Lizzo' },
+            { title: 'Flowers', artist: 'Miley Cyrus' },
+            { title: 'Unholy', artist: 'Sam Smith, Kim Petras' },
+            { title: "Hips Don't Lie", artist: 'Shakira, Wyclef Jean' },
+            { title: 'Taki Taki', artist: 'DJ Snake, Selena Gomez, Ozuna, Cardi B' },
+            { title: 'Confident', artist: 'Demi Lovato' }
+        ]
+    }
+};
+
+// Register each radio as a read-only playlist so selecting a station opens
+// the same full playlist view used by regular playlists, with every track visible.
+const ARTIST_RADIO_STATIONS = {
+    'arijit-radio': {
+        name: 'Arijit Singh Radio', cover: 'image/Arjit singh.jpeg', songs: [
+            { title: 'Tum Hi Ho', artist: 'Arijit Singh' }, { title: 'Channa Mereya', artist: 'Arijit Singh' },
+            { title: 'Raabta', artist: 'Arijit Singh' }, { title: 'Agar Tum Saath Ho', artist: 'Alka Yagnik, Arijit Singh' },
+            { title: 'Ae Dil Hai Mushkil', artist: 'Arijit Singh' }, { title: 'Kesariya', artist: 'Arijit Singh' },
+            { title: 'Phir Le Aya Dil', artist: 'Arijit Singh' }, { title: 'Tera Yaar Hoon Main', artist: 'Arijit Singh' },
+            { title: 'Tujhe Kitna Chahne Lage', artist: 'Arijit Singh' }, { title: 'Shayad', artist: 'Arijit Singh' },
+            { title: 'Pee Loon', artist: 'Mohit Chauhan' }, { title: 'Iktara', artist: 'Kavita Seth' }
+        ]
+    },
+    'diljit-radio': {
+        name: 'Diljit Dosanjh Radio', cover: 'image/Diljit.jpeg', songs: [
+            { title: 'Lover', artist: 'Diljit Dosanjh' }, { title: 'Born to Shine', artist: 'Diljit Dosanjh' },
+            { title: 'GOAT', artist: 'Diljit Dosanjh' }, { title: 'Naina', artist: 'Diljit Dosanjh, Badshah' },
+            { title: 'Hass Hass', artist: 'Diljit Dosanjh, Sia' }, { title: 'Do You Know', artist: 'Diljit Dosanjh' },
+            { title: 'Backbone', artist: 'Harrdy Sandhu' }, { title: 'Naah', artist: 'Harrdy Sandhu' },
+            { title: '295', artist: 'Sidhu Moose Wala' }, { title: 'So High', artist: 'Sidhu Moose Wala' },
+            { title: 'Excuses', artist: 'AP Dhillon, Gurinder Gill' }, { title: 'Insane', artist: 'AP Dhillon' }
+        ]
+    },
+    'shreya-radio': {
+        name: 'Shreya Ghoshal Radio', cover: 'image/Shreya.jpeg', songs: [
+            { title: 'Teri Ore', artist: 'Shreya Ghoshal, Rahat Fateh Ali Khan' }, { title: 'Sun Raha Hai', artist: 'Shreya Ghoshal' },
+            { title: 'Saibo', artist: 'Shreya Ghoshal, Tochi Raina' }, { title: 'Deewani Mastani', artist: 'Shreya Ghoshal' },
+            { title: 'Chikni Chameli', artist: 'Shreya Ghoshal' }, { title: 'Jaadu Hai Nasha Hai', artist: 'Shreya Ghoshal' },
+            { title: 'Agar Tum Mil Jao', artist: 'Shreya Ghoshal' }, { title: 'Param Sundari', artist: 'Shreya Ghoshal' },
+            { title: 'Tum Kya Mile', artist: 'Shreya Ghoshal, Arijit Singh' }, { title: 'Ghar More Pardesiya', artist: 'Shreya Ghoshal' },
+            { title: 'Tere Bina', artist: 'A. R. Rahman, Chinmayi' }, { title: 'Aaj Ki Raat', artist: 'Madhubanti Bagchi, Divya Kumar' }
+        ]
+    },
+    'atif-radio': {
+        name: 'Atif Aslam Radio', cover: 'image/Atif.jpeg', songs: [
+            { title: 'Tera Hone Laga Hoon', artist: 'Atif Aslam, Alisha Chinai' }, { title: 'Jeene Laga Hoon', artist: 'Atif Aslam, Shreya Ghoshal' },
+            { title: 'Pehli Nazar Mein', artist: 'Atif Aslam' }, { title: 'Tu Jaane Na', artist: 'Atif Aslam' },
+            { title: 'Dil Diyan Gallan', artist: 'Atif Aslam' }, { title: 'Tere Sang Yaara', artist: 'Atif Aslam' },
+            { title: 'Woh Lamhe', artist: 'Atif Aslam' }, { title: 'O Saathi', artist: 'Atif Aslam' },
+            { title: 'Aadat', artist: 'Atif Aslam' }, { title: 'Piya O Re Piya', artist: 'Atif Aslam, Shreya Ghoshal' },
+            { title: 'Zindagi Aa Raha Hoon Main', artist: 'Atif Aslam' }, { title: 'Kaise Bataaoon', artist: 'KK, Atif Aslam' }
+        ]
+    },
+    'karan-radio': {
+        name: 'Karan Aujla Radio', cover: 'image/Karan Aujla.jpeg', songs: [
+            { title: 'Softly', artist: 'Karan Aujla' }, { title: '52 Bars', artist: 'Karan Aujla' },
+            { title: 'Winning Speech', artist: 'Karan Aujla' }, { title: 'Tauba Tauba', artist: 'Karan Aujla' },
+            { title: 'Players', artist: 'Badshah, Karan Aujla' }, { title: 'Admiring You', artist: 'Karan Aujla, Preet Aujla' },
+            { title: 'On Top', artist: 'Karan Aujla' }, { title: 'Chitta Kurta', artist: 'Karan Aujla' },
+            { title: 'We Rollin', artist: 'Shubh' }, { title: 'Cheques', artist: 'Shubh' },
+            { title: 'Brown Munde', artist: 'AP Dhillon, Gurinder Gill, Shinda Kahlon' }, { title: 'Insane', artist: 'AP Dhillon' }
+        ]
+    }
+};
+
+Object.entries({ ...POPULAR_RADIO_STATIONS, ...ARTIST_RADIO_STATIONS }).forEach(([key, station]) => {
+    PLAYLISTS[key] = {
+        title: station.name,
+        cover: station.cover || ({ 'the-weeknd': 'image/the weeknd.jpg', 'english-pop': 'image/Happy vibes.jpg', 'hindi-party': 'image/Arjit singh.jpeg', 'punjabi-party': 'image/Karan Aujla.jpeg', grwm: 'image/grwm.jpg' }[key] || 'image/Starboy.jpg'),
+        tracks: tracksFromList(station.songs),
+        isRadioStation: true
+    };
+});
+
+function playPopularRadioStation(stationKey) {
+    if (!PLAYLISTS[stationKey]) return;
+    openPlaylist(stationKey);
 }
 
+// Capture station-card clicks before other home-card handlers can swallow them.
+// This also supports cards rendered or re-rendered after initial page setup.
+document.addEventListener('click', (event) => {
+    const card = event.target.closest('[data-radio-station], .artist .slider .card');
+    if (!card) return;
+    let stationKey = card.dataset.radioStation;
+    if (!stationKey && card.closest('.artist')) {
+        const cards = Array.from(card.closest('.slider').querySelectorAll('.card'));
+        const index = cards.indexOf(card);
+        stationKey = ['arijit-radio', 'diljit-radio', 'shreya-radio', 'atif-radio', 'karan-radio'][index];
+    }
+    if (!stationKey || !PLAYLISTS[stationKey]) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openPlaylist(stationKey);
+}, true);
+
+document.querySelectorAll('[data-radio-station]').forEach((card) => {
+    const activateStation = () => playPopularRadioStation(card.dataset.radioStation);
+    card.addEventListener('click', activateStation);
+    card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            activateStation();
+        }
+    });
+});
+
+const artistRadioKeys = ['arijit-radio', 'diljit-radio', 'shreya-radio', 'atif-radio', 'karan-radio'];
+
+// The Recommended Stations row uses .station-card (not .artist .slider .card),
+// so wire these five cards explicitly to the same full playlist views.
+document.querySelectorAll('.recommended-stations .station-grid .station-card').forEach((card, index) => {
+    const stationKey = artistRadioKeys[index];
+    if (!stationKey || !PLAYLISTS[stationKey]) return;
+    card.dataset.radioStation = stationKey;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Open ${PLAYLISTS[stationKey].title}`);
+});
+document.querySelectorAll('.artist .slider .card').forEach((card, index) => {
+    const stationKey = artistRadioKeys[index];
+    if (!stationKey) return;
+    card.dataset.radioStation = stationKey;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Open ${PLAYLISTS[stationKey].title}`);
+    const activate = () => openPlaylist(stationKey);
+    card.addEventListener('click', activate);
+    card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); }
+    });
+});
+
+const popularStationsShowAll = document.getElementById('popularStationsShowAll');
+const popularStationGrid = document.getElementById('popularStationGrid');
+if (popularStationsShowAll && popularStationGrid) {
+    popularStationsShowAll.addEventListener('click', (event) => {
+        event.preventDefault();
+        const expanded = popularStationGrid.classList.toggle('show-all');
+        popularStationsShowAll.textContent = expanded ? 'Show Less' : 'Show All';
+        popularStationsShowAll.setAttribute('aria-expanded', String(expanded));
+    });
+}
+
+const exploreMusicBtn = document.getElementById('exploreMusicBtn');
+if (exploreMusicBtn) exploreMusicBtn.addEventListener('click', () => {
+    const popular = document.querySelector('.popular');
+    if (popular) popular.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+document.querySelectorAll('.home-show-all').forEach((link) => link.addEventListener('click', (event) => event.preventDefault()));
+const recentsShowAll = document.getElementById('recentsShowAll');
+if (recentsShowAll) recentsShowAll.addEventListener('click', (event) => { event.preventDefault(); showAllRecents = !showAllRecents; renderRecents(); });
+renderRecents();
 
 // ---------------------------------------------------------------------
-// 2. SIDEBAR SEARCH BUTTON
+// 2. SEARCH CONTROLS
 // ---------------------------------------------------------------------
 
 const searchInput = document.querySelector('.search-bar input');
 const searchIcon = document.querySelector('.search-bar .fa-magnifying-glass');
-
-const sidebarSearchBtn = sidebarNavIcons.length > 1
-    ? sidebarNavIcons[1]
-    : null;
 
 function focusSearch() {
     if (!searchInput) return;
 
     searchInput.focus();
     searchInput.select();
-}
-
-if (sidebarSearchBtn) {
-    sidebarSearchBtn.addEventListener('click', focusSearch);
 }
 
 if (searchIcon) {
@@ -1186,6 +2141,26 @@ function performSearch() {
 }
 
 if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        if (!playlistView || playlistView.hidden) return;
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+        trackListEl.querySelectorAll('.track-row').forEach(row => {
+            const title = row.querySelector('.track-text h4')?.textContent.toLocaleLowerCase() || '';
+            const artist = row.querySelector('.track-text p')?.textContent.toLocaleLowerCase() || '';
+            const matches = !query || title.includes(query) || artist.includes(query);
+            row.hidden = !matches;
+            if (matches) visibleCount++;
+        });
+        const existing = trackListEl.querySelector('.playlist-search-empty');
+        if (existing) existing.remove();
+        if (query && visibleCount === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'playlist-search-empty';
+            empty.textContent = `No songs match “${searchInput.value.trim()}”`;
+            trackListEl.appendChild(empty);
+        }
+    });
 
     // Press Enter to search
     searchInput.addEventListener('keydown', (event) => {
@@ -1216,59 +2191,26 @@ if (searchIcon) {
 
 }
 
-
-// ---------------------------------------------------------------------
-// 4. LEFT SIDEBAR PLAYLIST BUTTONS
-// ---------------------------------------------------------------------
-
-const sidebarPlaylists = document.querySelectorAll('.library img.playlist');
-
-const sidebarPlaylistMap = {
-
-    'liked.jpg': 'liked',
-    'myplaylist.jpg': 'myplaylist7',
-    'pop.jpg': 'poppart',
-    'techno.jpg': 'technomix',
-    'shuffle.jpg': 'shuffle',
-    'thinking.jpg': 'thinking'
-
-};
-
-sidebarPlaylists.forEach((playlistImage) => {
-
-    playlistImage.style.cursor = 'pointer';
-
-    playlistImage.addEventListener('click', () => {
-
-        const src = playlistImage.getAttribute('src') || '';
-
-        const filename = src
-            .split('/')
-            .pop()
-            .toLowerCase();
-
-        const playlistKey = sidebarPlaylistMap[filename];
-
-        if (!playlistKey) {
-            showToast('Playlist is not available');
-            return;
-        }
-
-        // Thinking Out Loud is a single track
-        if (SINGLE_TRACKS[playlistKey]) {
-
-            playSingleTrack(playlistKey);
-
-        } else {
-
-            openPlaylist(playlistKey);
-
-        }
-
+const savedSongsButton = document.querySelector('.search-bar .fa-box-archive');
+if (savedSongsButton) {
+    savedSongsButton.style.cursor = 'pointer';
+    savedSongsButton.title = 'Saved Songs';
+    savedSongsButton.setAttribute('role', 'button');
+    savedSongsButton.setAttribute('tabindex', '0');
+    savedSongsButton.addEventListener('click', () => openPlaylist('saved'));
+    savedSongsButton.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlaylist('saved'); }
     });
+}
 
-});
 
+// ---------------------------------------------------------------------
+// 4. SIDEBAR PLAYLISTS
+// ---------------------------------------------------------------------
+
+// The sidebar starts with no user-created playlists. The plus button creates
+// them; saved playlists are restored from localStorage on the next visit.
+renderUserPlaylists();
 
 // Bookmark/library button → Liked Songs
 const libraryButton = document.querySelector('.library-icon');
@@ -1942,9 +2884,77 @@ document.addEventListener('keydown', (event) => {
 
 
 // Initial UI state
+renderUserPlaylists();
 refreshLikeIcons();
 updateVolumeIcon();
 
 console.log(
     'EchoBeat interactive controls loaded successfully.'
 );
+
+// Playlist management stays in the main playlist toolbar, never in the sidebar.
+const playlistManagementTrigger = document.getElementById('playlistManagementTrigger');
+const playlistManagementMenu = document.getElementById('playlistManagementMenu');
+const playlistManagement = document.getElementById('playlistManagement');
+
+if (playlistManagementTrigger && playlistManagementMenu) {
+    playlistManagementTrigger.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const opening = playlistManagementMenu.hidden;
+        playlistManagementMenu.hidden = !opening;
+        playlistManagementTrigger.setAttribute('aria-expanded', String(opening));
+    });
+
+    playlistManagementMenu.addEventListener('click', (event) => {
+        const actionButton = event.target.closest('[data-playlist-action]');
+        if (!actionButton) return;
+        playlistManagementMenu.hidden = true;
+        playlistManagementTrigger.setAttribute('aria-expanded', 'false');
+        manageCurrentPlaylist(actionButton.dataset.playlistAction);
+    });
+
+    document.addEventListener('click', (event) => {
+        if (playlistManagement && !playlistManagement.contains(event.target)) {
+            playlistManagementMenu.hidden = true;
+            playlistManagementTrigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && playlistManagementMenu && !playlistManagementMenu.hidden) {
+            playlistManagementMenu.hidden = true;
+            playlistManagementTrigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Search within the currently open playlist by song title prefix.
+// This is separate from the global search and works for every playlist type.
+const playlistSearchInput = document.getElementById('playlistSearchInput');
+
+if (playlistSearchInput) {
+    playlistSearchInput.addEventListener('input', () => {
+        if (!trackListEl) return;
+
+        const query = playlistSearchInput.value.trim().toLocaleLowerCase();
+        const rows = Array.from(trackListEl.querySelectorAll('.track-row'));
+        let visibleCount = 0;
+
+        rows.forEach((row) => {
+            const title = row.querySelector('.track-text h4')?.textContent.trim().toLocaleLowerCase() || '';
+            const matches = !query || title.startsWith(query);
+            row.hidden = !matches;
+            if (matches) visibleCount += 1;
+        });
+
+        const previousEmpty = trackListEl.querySelector('.playlist-search-empty');
+        if (previousEmpty) previousEmpty.remove();
+
+        if (query && rows.length > 0 && visibleCount === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'playlist-search-empty';
+            emptyState.textContent = `No songs starting with “${playlistSearchInput.value.trim()}” in this playlist.`;
+            trackListEl.appendChild(emptyState);
+        }
+    });
+}

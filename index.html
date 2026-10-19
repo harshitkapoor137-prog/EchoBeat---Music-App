@@ -236,7 +236,7 @@
                     data-provider="Apple">
                 <span class="social-icon">
                     <svg viewBox="0 0 384 512" width="20" height="20" fill="currentColor">
-                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 0 184.5 0 273.6c0 26.4 4.8 53.7 14.5 81.9 12.9 37.4 59.5 129 108.1 127.5 25.4-.6 43.3-18 76.4-18 32.1 0 48.7 18 76.4 18 49 .7 91.1-83 103.9-120.5-66-31.2-60.6-91.5-60.6-93.8zM255.8 88.8c25.9-30.8 23.6-58.9 22.9-69-23 1.3-49.6 15.7-64.9 33.4-16.9 18.9-26.8 42.4-24.7 68.9 1.9 47.9-12.6 66.7-33.3z"/>
+                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 0 184.5 0 273.6c0 26.4 4.8 53.7 14.5 81.9 12.9 37.4 59.5 129 108.1 127.5 25.4-.6 43.3-18 76.4-18 32.1 0 48.7 18 76.4 18 49 .7 91.1-83 103.9-120.5-66-31.2-60.6-91.5-60.6-93.8zM255.8 88.8c25.9-30.8 23.6-58.9 22.9-69-23 1.3-49.6 15.7-64.9 33.4-16.9 18.9-26.8 42.4-24.7 68.9-25-1.9-47.9 12.6-66.7 33.3z"/>
                     </svg>
                 </span>
                 <span>Sign up with Apple</span>
@@ -255,43 +255,20 @@
 
             <div class="top-icons">
 
-                <div class="dot-menu">
-                    <i class="fa-solid fa-ellipsis"></i>
-                </div>
-
-                <div class="nav-icon">
-                    <i class="fa-solid fa-house"></i>
-                </div>
-
-                <div class="nav-icon">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="nav-icon">
+                <button type="button" class="nav-icon" id="createPlaylistBtn" aria-label="Create playlist" title="Create playlist">
                     <i class="fa-solid fa-plus"></i>
-                </div>
+                </button>
 
             </div>
 
             <div class="library">
 
-                <div class="library-icon active">
-                    <i class="fa-solid fa-bookmark"></i>
+                <div class="library-icon active" style="background: linear-gradient(135deg, #5b00ff 0%, #c4f0d1 100%);">
+                    <i class="fa-solid fa-heart" style="color: #ffffff;"></i>
                 </div>
 
-                <img src="image/Liked.jpg" class="playlist">
 
-                <img src="image/MyPlaylist.jpg" class="playlist">
-
-                <img src="image/Pop.jpg" class="playlist">
-
-                <img src="image/Techno.jpg" class="playlist">
-
-                <img src="image/Shuffle.jpg" class="playlist">
-
-                <img src="image/Thinking.jpg" class="playlist">
+                <div id="userPlaylistSidebar" class="user-playlist-sidebar" aria-label="Your playlists"></div>
 
             </div>
 
@@ -303,9 +280,13 @@
 
                 <div class="header-left">
 
-                    <div class="nav-btn">
+                    <button type="button" class="nav-btn" id="backNavBtn" aria-label="Go back" title="Go back">
                         <i class="fa-solid fa-chevron-left"></i>
-                    </div>
+                    </button>
+
+                    <button type="button" class="home-btn" id="homeNavBtn" aria-label="Home" title="Home">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
                 </div>
 
                 <div class="header-center">
@@ -318,7 +299,7 @@
 
                         <div class="search-divider"></div>
 
-                        <i class="fa-solid fa-box-archive"></i>
+                        <i class="fa-solid fa-heart"></i>
 
                     </div>
 
@@ -361,125 +342,88 @@
 
                   <div id="homeView" class="page-view">
 
-                    <div class="quick-links">
-
-                        <div class="quick-card" data-playlist="myplaylist7">
-                            <img src="image/MyPlaylist.jpg">
-                            <span>My Playlist #7</span>
+                    <section class="home-announcement" aria-label="Featured announcement">
+                        <div class="announcement-art">
+                            <img src="image/atif album.jpg" alt="Featured music artwork">
+                            <div class="announcement-art-copy"><span>NOW PLAYING ON</span><strong>EchoBeat</strong></div>
                         </div>
-
-                        <div class="quick-card" data-playlist="shuffle">
-                            <img src="image/Shuffle.jpg">
-                            <span>Shuffle & Vibe</span>
-                        </div>
-
-                        <div class="quick-card" data-playlist="technomix">
-                            <img src="image/Techno.jpg">
-                            <span>TechnoMix</span>
-                        </div>
-
-                        <div class="quick-card" data-playlist="liked">
-                            <img src="image/Liked.jpg">
-                            <span>Liked Songs</span>
-                        </div>
-
-                        <div class="quick-card" data-playlist="poppart">
-                            <img src="image/Pop.jpg">
-                            <span>Pop-Party</span>
-                        </div>
-
-                        <div class="quick-card" data-playlist="thinking">
-                            <img src="image/Thinking.jpg" >
-                            <span>Thinking Out Loud</span>
-                        </div>
-
-                        <div class="quick-card" data-playlist="notion">
-                            <img src="image/Notion.jpg">
-                            <span>Notion</span>
-                        </div>
-
-                        <div class="quick-card" data-playlist="ishq">
-                            <img src="image/Ishq.jpg">
-                            <span>Ishq Di<br>Baajiyaan Radio</span>
-                        </div>
-
-                    </div>
-
-                    <!-- Workspace to be used by teammates -->
-                    <section class="popular">
-                        <div class="popular-header">
-                            <h3>Popular Hits</h3>
-                            <a href="#">Show All</a>
-                        </div>
-
-                        <div class="slider">
-                            <div class="card">
-                                <img src="image/trending.jpg" alt="Trending">
-                                <h3>Trending in INDIA</h3>
-                                <p>Every track you're listening/should be listening to</p>
-                            </div>
-                            <div class="card">
-                                <img src="image/ariana album.jpg" alt="ariana">
-                                <h3>petal</h3>
-                                <p>Album - Ariana Grande</p>
-                            </div>
-
-                            <div class="card">
-                                <img src="image/grwm.jpg" alt="grwm">
-                                <h3>#GRWM Hindi</h3>
-                                <p>Get ready because you're the main character.</p>
-                            </div>
-
-                            <div class="card">
-                                <img src="image/atif album.jpg" alt="atif album">
-                                <h3>Subah Aye Na</h3>
-                                <p>Latest Release - Atif Asalam</p>
-                            </div>
-
-                            <div class="card">
-                                <img src="image/Happy vibes.jpg" alt="happy">
-                                <h3>Happy Vibes</h3>
-                                <p>Bright, Sunny, Catchy tunes.</p>
-                            </div>
+                        <div class="announcement-copy">
+                            <div class="announcement-byline"><img src="image/atif album.jpg" alt=""><div><strong>EchoBeat Picks</strong><span>Announcement</span></div></div>
+                            <h1>Your next favourite song starts here.</h1>
+                            <p>Discover music, build your playlists, and keep the good tunes going.</p>
+                            <button type="button" class="announcement-action" id="exploreMusicBtn">Explore music</button>
                         </div>
                     </section>
 
-                    <section class="recents">
+                    <div class="home-filter-pills" role="group" aria-label="Filter home content">
+                        <button type="button" class="home-filter-pill active" data-home-filter="all">All</button>
+                        <button type="button" class="home-filter-pill" data-home-filter="music">Music</button>
+                        <button type="button" class="home-filter-pill" data-home-filter="podcasts">Podcasts</button>
+                    </div>
+
+                    <div class="quick-links" id="homeQuickLinks" aria-label="Your playlists">
+                        <div class="quick-card" data-playlist="liked">
+                            <img src="image/Liked.jpg" alt="">
+                            <span>Liked Songs</span>
+                        </div>
+                    </div>
+
+                    <section class="recommended-stations home-music-section">
+                        <div class="popular-header">
+                            <h3>Recommended Stations</h3>
+                            <a href="#" class="home-show-all">Show all</a>
+                        </div>
+                        <div class="station-grid">
+                            <article class="station-card"><img src="image/Arjit singh.jpeg" alt="Arijit Singh"><span class="station-type">RADIO</span><h4>Arijit Singh Radio</h4><p>With Jeet Gannguli, Pritam and more</p></article>
+                            <article class="station-card"><img src="image/Diljit.jpeg" alt="Diljit Dosanjh"><span class="station-type">RADIO</span><h4>Diljit Dosanjh Radio</h4><p>With Harrdy Sandhu, Sidhu Moose Wala and more</p></article>
+                            <article class="station-card"><img src="image/Shreya.jpeg" alt="Shreya Ghoshal"><span class="station-type">RADIO</span><h4>Shreya Ghoshal Radio</h4><p>With A. R. Rahman, Vishal-Shekhar and more</p></article>
+                            <article class="station-card"><img src="image/Atif.jpeg" alt="Atif Aslam"><span class="station-type">RADIO</span><h4>Atif Aslam Radio</h4><p>With Vishal-Shekhar, Sachin-Jigar and more</p></article>
+                            <article class="station-card"><img src="image/Karan Aujla.jpeg" alt="Karan Aujla"><span class="station-type">RADIO</span><h4>Karan Aujla Radio</h4><p>With Shubh, AP Dhillon and more</p></article>
+                        </div>
+                    </section>
+
+                    <!-- Workspace to be used by teammates -->
+                    <section class="popular home-music-section" id="popularHitsSection">
+                        <div class="popular-header">
+                            <h3>Popular Hits</h3>
+                            <a href="#" id="popularStationsShowAll" aria-expanded="false">Show All</a>
+                        </div>
+
+                        <div class="slider popular-station-slider" id="popularStationGrid">
+                            <article class="card popular-station-card" data-radio-station="the-weeknd" role="button" tabindex="0" aria-label="Play The Weeknd Radio">
+                                <img src="image/The weeknd.jpg" alt="The Weeknd Radio">
+                                <h3>The Weeknd Radio</h3>
+                                <p>The Weeknd, The Neighbourhood, Arctic Monkeys, Maroon 5 and more</p>
+                            </article>
+                            <article class="card popular-station-card" data-radio-station="english-pop" role="button" tabindex="0" aria-label="Play English Pop Party">
+                                <img src="image/Happy vibes.jpg" alt="English Pop Party">
+                                <h3>English Pop Party</h3>
+                                <p>Dua Lipa, Harry Styles, Charlie Puth and more</p>
+                            </article>
+                            <article class="card popular-station-card" data-radio-station="hindi-party" role="button" tabindex="0" aria-label="Play Hindi Party Anthems">
+                                <img src="image/Arjit singh.jpeg" alt="Hindi Party Anthems">
+                                <h3>Hindi Party Anthems</h3>
+                                <p>Bollywood dance-floor favourites</p>
+                            </article>
+                            <article class="card popular-station-card" data-radio-station="punjabi-party" role="button" tabindex="0" aria-label="Play Punjabi Party Anthems">
+                                <img src="image/Karan Aujla.jpeg" alt="Punjabi Party Anthems">
+                                <h3>Punjabi Party Anthems</h3>
+                                <p>Diljit Dosanjh, Karan Aujla, AP Dhillon, Shubh and more</p>
+                            </article>
+                            <article class="card popular-station-card" data-radio-station="grwm" role="button" tabindex="0" aria-label="Play GRWM">
+                                <img src="image/grwm.jpg" alt="GRWM playlist">
+                                <h3>GRWM</h3>
+                                <p>Get ready, glow up, and own the moment</p>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="recents home-music-section" id="recentsSection">
                         <div class="recents-header">
                             <h3>Recents</h3>
-                            <a href="#">Show All</a>
+                            <a href="#" id="recentsShowAll">Show All</a>
                         </div>
-
-                        <div class="slider">
-                            <div class="card">
-                                <img src="image/All the Stars.jpg" alt="All the Stars">
-                                <h3>All the Stars</h3>
-                                <p>Kendrick Lamar - SZA</p>
-                            </div>
-                            <div class="card">
-                                <img src="image/Starboy.jpg" alt="Starboy">
-                                <h3>Starboy</h3>
-                                <p>The Weeknd</p>
-                            </div>
-
-                            <div class="card">
-                                <img src="image/Blinding lights.jpg" alt="Blinding Lights">
-                                <h3>Blinding Lights</h3>
-                                <p>The Weeknd</p>
-                            </div>
-
-                            <div class="card">
-                                <img src="image/Save your tears.jpg" alt="Save Your Tears">
-                                <h3>Save Your Tears</h3>
-                                <p>The Weeknd</p>
-                            </div>
-
-                            <div class="card">
-                                <img src="image/Less than Zero.jpg" alt="Less Than Zero">
-                                <h3>Less Than Zero</h3>
-                                <p>The Weeknd</p>
-                            </div>
-                        </div>
+                        <div class="slider" id="recentsSlider" aria-live="polite"></div>
                     </section>
 
                     <section class="artist">
@@ -520,7 +464,7 @@
                         </div>
                     </section>
 
-                    <section class="podcasts">
+                    <section class="podcasts home-podcast-section">
 
                         <div class="popular-header">
                             <h3>Popular Podcasts</h3>
@@ -581,19 +525,33 @@
                   <!-- Playlist detail view -->
                   <div id="playlistView" class="page-view" hidden>
 
-                        <button type="button" class="back-btn" data-back-to="homeView">
-                            <i class="fa-solid fa-arrow-left"></i> Back
-                        </button>
-
                         <div class="playlist-hero">
                             <img id="playlistCover" src="image/Liked.jpg" alt="">
                             <div>
                                 <span class="playlist-kicker">Playlist</span>
                                 <h1 id="playlistTitle">Liked Songs</h1>
                                 <p id="playlistMeta">10 songs</p>
-                                <button type="button" class="play-all-btn" id="playAllBtn">
-                                    <i class="fa-solid fa-play"></i> Play
-                                </button>
+                                <div class="playlist-hero-actions">
+                                    <button type="button" class="play-all-btn" id="playAllBtn">
+                                        <i class="fa-solid fa-play"></i> Play
+                                    </button>
+                                    <button type="button" class="add-songs-btn" id="addSongsBtn" hidden>
+                                        <i class="fa-solid fa-plus"></i> Add songs
+                                    </button>
+                                    <label class="playlist-search-control" for="playlistSearchInput">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input type="search" id="playlistSearchInput" placeholder="Search within playlist" autocomplete="off" aria-label="Search within playlist">
+                                    </label>
+                                    <div class="playlist-management" id="playlistManagement" hidden>
+                                        <button type="button" class="playlist-management-trigger" id="playlistManagementTrigger" aria-label="Manage playlist" aria-haspopup="true" aria-expanded="false" title="Manage playlist">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </button>
+                                        <div class="playlist-management-menu" id="playlistManagementMenu" hidden>
+                                            <button type="button" data-playlist-action="rename"><i class="fa-solid fa-pen"></i> Rename playlist</button>
+                                            <button type="button" data-playlist-action="delete"><i class="fa-regular fa-trash-can"></i> Delete playlist</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1190,6 +1148,46 @@
 
     </div>
     <!-- /#mainApp -->
+
+    <!-- Create playlist modal -->
+    <div id="createPlaylistModal" class="song-picker-modal" hidden>
+        <form id="createPlaylistForm" class="create-playlist-panel" role="dialog" aria-modal="true" aria-labelledby="createPlaylistTitle">
+            <div class="song-picker-header">
+                <div>
+                    <p class="song-picker-kicker">YOUR MUSIC</p>
+                    <h2 id="createPlaylistTitle">Create playlist</h2>
+                </div>
+                <button type="button" id="closeCreatePlaylistBtn" class="song-picker-close" aria-label="Close create playlist dialog">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <label class="song-picker-target-label" for="newPlaylistName">Give your new playlist a name</label>
+            <input type="text" id="newPlaylistName" class="song-picker-search" placeholder="My playlist" maxlength="60" autocomplete="off" required>
+            <div class="create-playlist-actions">
+                <button type="button" id="cancelCreatePlaylistBtn" class="create-playlist-cancel">Cancel</button>
+                <button type="submit" class="create-playlist-submit"><i class="fa-solid fa-plus"></i> Create</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Add songs to playlist modal -->
+    <div id="songPickerModal" class="song-picker-modal" hidden>
+        <div class="song-picker-panel" role="dialog" aria-modal="true" aria-labelledby="songPickerTitle">
+            <div class="song-picker-header">
+                <div>
+                    <p class="song-picker-kicker">YOUR MUSIC</p>
+                    <h2 id="songPickerTitle">Add songs to playlist</h2>
+                </div>
+                <button type="button" id="closeSongPickerBtn" class="song-picker-close" aria-label="Close song picker">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <label class="song-picker-target-label" for="songPickerTarget">Choose playlist</label>
+            <select id="songPickerTarget" class="song-picker-target"></select>
+            <input type="search" id="songPickerSearch" class="song-picker-search" placeholder="Search songs or artists..." autocomplete="off">
+            <div id="songPickerList" class="song-picker-list"></div>
+        </div>
+    </div>
 
     <!-- Video player modal -->
     <div id="videoModal" class="video-modal" hidden>
