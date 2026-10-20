@@ -480,7 +480,80 @@ const audioPlayer = new Audio();
 let currentPlaylistKey = null;
 let currentQueue = [];
 let currentIndex = -1;
+function renderQueue() {
+    const queueContainer = document.getElementById('dynamicQueue');
+
+    if (!queueContainer) return;
+
+    queueContainer.innerHTML = '';
+
+    const upcomingSongs = currentQueue.slice(currentIndex + 1);
+
+    if (upcomingSongs.length === 0) {
+        queueContainer.innerHTML = '<p style="color:#b3b3b3;">No upcoming songs</p>';
+        return;
+    }
+
+    upcomingSongs.forEach((song, index) => {
+        const item = document.createElement('div');
+        item.className = 'queue-item';
+        item.style.cursor = 'pointer';
+
+item.addEventListener('click', () => {
+    loadTrack(currentIndex + 1 + index, true);
+});
+
+        const img = document.createElement('img');
+        img.src = song.cover;
+        img.alt = song.title;
+
+        const details = document.createElement('div');
+
+        const title = document.createElement('h4');
+        title.textContent = song.title;
+
+        const artist = document.createElement('p');
+        artist.textContent = song.artist;
+
+        details.append(title, artist);
+        item.append(img, details);
+        queueContainer.appendChild(item);
+    });
+}
 let isPlaying = false;
+
+let isShuffleOn = false;
+let repeatMode = 'off'; // off, all, one
+
+const shuffleBtn = document.getElementById('shuffleBtn');
+const repeatBtn = document.getElementById('repeatBtn');
+
+shuffleBtn.addEventListener('click', () => {
+    isShuffleOn = !isShuffleOn;
+
+    shuffleBtn.style.color = isShuffleOn ? '#1DB954' : '#b3b3b3';
+    shuffleBtn.classList.toggle('active', isShuffleOn);
+
+    console.log('Shuffle:', isShuffleOn ? 'ON' : 'OFF');
+});
+
+repeatBtn.addEventListener('click', () => {
+    if (repeatMode === 'off') {
+        repeatMode = 'all';
+    } else if (repeatMode === 'all') {
+        repeatMode = 'one';
+    } else {
+        repeatMode = 'off';
+    }
+
+    repeatBtn.style.color =
+        repeatMode === 'off' ? '#b3b3b3' : '#1DB954';
+        repeatBtn.classList.toggle('active', repeatMode !== 'off');
+
+    repeatBtn.title = `Repeat: ${repeatMode}`;
+
+    console.log('Repeat:', repeatMode);
+});
 
 // Keep Recents synced to tracks that actually begin playback, regardless of entry point.
 audioPlayer.addEventListener('play', () => {
@@ -524,6 +597,7 @@ function loadTrack(index, autoplay) {
     audioPlayer.currentTime = 0;
     renderNowPlaying(track);
     rememberRecentTrack(track);
+    renderQueue();
 
     if (autoplay) {
         audioPlayer.play().catch(() => {});
@@ -566,10 +640,26 @@ function togglePlayPause() {
 function playNext(autoNext = false) {
     if (!currentQueue.length) return;
 
-    // Stop after the last song when advancing automatically.
-    if (autoNext && currentIndex >= currentQueue.length - 1) {
-        isPlaying = false;
-        setPlayIcon(false);
+    if (isShuffleOn && currentQueue.length > 1) {
+        let nextIndex;
+
+        do {
+            nextIndex = Math.floor(Math.random() * currentQueue.length);
+        } while (nextIndex === currentIndex);
+
+        loadTrack(nextIndex, true);
+        return;
+    }
+
+    if (currentIndex >= currentQueue.length - 1) {
+        if (repeatMode === 'all') {
+            loadTrack(0, true);
+        } else if (autoNext) {
+            isPlaying = false;
+            setPlayIcon(false);
+        } else {
+            loadTrack(0, true);
+        }
         return;
     }
 
@@ -585,8 +675,13 @@ if (playBtn) playBtn.addEventListener('click', togglePlayPause);
 if (forwardBtn) forwardBtn.addEventListener('click', () => playNext(false));
 if (backwardBtn) backwardBtn.addEventListener('click', playPrev);
 
+
 audioPlayer.addEventListener('ended', () => {
-    playNext(true);
+    if (repeatMode === 'one') {
+        loadTrack(currentIndex, true);
+    } else {
+        playNext(true);
+    }
 });
 
 audioPlayer.addEventListener('timeupdate', () => {
@@ -2588,8 +2683,10 @@ function openSongFullscreen() {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background: #050505;
-        color: white;
+        background: ${document.documentElement.getAttribute('data-theme') === 'light' ? '#ffffff' : '#050505'};
+color: ${document.documentElement.getAttribute('data-theme') === 'light' ? '#121212' : '#ffffff'};
+
+
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -2809,20 +2906,31 @@ function openSongFullscreen() {
 // Both fullscreen buttons:
 // - Now Playing fullscreen
 // - Bottom player fullscreen
-document.addEventListener('click', (event) => {
+const fullscreenBtn = document.getElementById('playerFullscreenBtn');
 
-    const expandButton =
-        event.target.closest('.fa-expand');
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', async () => {
+        try {
+            if (!document.fullscreenElement) {
+                await document.documentElement.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
+            }
+        } catch (error) {
+            console.error('Fullscreen error:', error);
+        }
+    });
+}
 
-    if (!expandButton) return;
+const coverFullscreenBtn = document.querySelector(
+    '.right-sidebar-actions .fa-expand'
+);
 
-    event.preventDefault();
-    event.stopPropagation();
-
-    openSongFullscreen();
-
-});
-
+if (coverFullscreenBtn) {
+    coverFullscreenBtn.addEventListener('click', () => {
+        openSongFullscreen();
+    });
+}
 
 // Escape / browser fullscreen exit
 document.addEventListener(

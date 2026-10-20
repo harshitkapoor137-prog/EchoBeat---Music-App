@@ -1021,48 +1021,8 @@
                             <a href="#">Open queue</a>
 
                         </div>
+                    <div id="dynamicQueue"></div>
 
-                        <div class="queue-item">
-
-                            <img src="image/Starboy.jpg" alt="Starboy">
-
-                            <div>
-
-                                <h4>Starboy</h4>
-
-                                <p>The Weeknd, Daft Punk</p>
-
-                            </div>
-
-                        </div>
-
-                        <div class="queue-item">
-
-                            <img src="image/Save your tears.jpg" alt="Save Your Tears">
-
-                            <div>
-
-                                <h4>Save Your Tears</h4>
-
-                                <p>The Weeknd</p>
-
-                            </div>
-
-                        </div>
-
-                        <div class="queue-item">
-
-                            <img src="image/Less than Zero.jpg" alt="Less Than Zero">
-
-                            <div>
-
-                                <h4>Less Than Zero</h4>
-
-                                <p>The Weeknd</p>
-
-                            </div>
-
-                        </div>
 
                     </div>
 
@@ -1092,7 +1052,9 @@
 
                     <div class="player-controls">
 
+                       <button type="button" id="shuffleBtn" aria-label="Toggle shuffle">
                         <i class="fa-solid fa-shuffle"></i>
+                        </button>
 
                         <i class="fa-solid fa-backward-step"></i>
 
@@ -1102,7 +1064,9 @@
 
                         <i class="fa-solid fa-forward-step"></i>
 
-                        <i class="fa-solid fa-repeat"></i>
+                        <button type="button" id="repeatBtn" aria-label="Toggle repeat">
+                            <i class="fa-solid fa-repeat"></i>
+                        </button>
 
                     </div>
 
@@ -1138,7 +1102,9 @@
 
                     </div>
 
-                    <i class="fa-solid fa-expand"></i>
+                    <button type="button" id="playerFullscreenBtn" aria-label="Fullscreen player">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
 
                 </div>
 
