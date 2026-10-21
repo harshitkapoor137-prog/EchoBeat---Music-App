@@ -465,7 +465,7 @@ function renderRecents() {
         image.src = track.cover;
         image.alt = `${track.title} cover`;
         image.loading = 'lazy';
-        image.onerror = () => { image.src = 'image/All the Stars.jpg'; };
+        image.onerror = () => { image.onerror = null; image.src = 'image/MyPlaylist.jpg'; };
         const title = document.createElement('h3');
         title.textContent = track.title;
         const artist = document.createElement('p');
