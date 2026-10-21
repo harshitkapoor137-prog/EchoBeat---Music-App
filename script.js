@@ -83,7 +83,8 @@ const SETTINGS_KEY = 'echobeat_settings';
 // =====================================================================
 
 function songCoverPath(title) {
-    return `image/songs/${title}.jpg`;
+    const fileName = title.replace(/\?/g, '');
+    return `image/songs/${fileName}.jpg`;
 }
 
 function trackFrom(title, artist) {
@@ -263,6 +264,10 @@ loadCustomPlaylists();
 const SINGLE_TRACKS = {
     thinking: trackFrom('Thinking Out Loud', 'Ed Sheeran'),
     notion: trackFrom('Notion', 'The Rare Occasions'),
+    allthestars: trackFrom('All The Stars', 'Kendrick Lamar, SZA'),
+    drive: trackFrom('Drive', 'Ed Sheeran'),
+    losemymind: trackFrom('Lose My Mind', 'Don Toliver'),
+    justkeepwatching: trackFrom('Just Keep Watching', 'Tate Mcrae')
 };
 
 // =====================================================================
@@ -414,7 +419,10 @@ const RECENT_STARTER_TRACKS = [
     trackFrom('Starboy', 'The Weeknd'),
     trackFrom('Blinding Lights', 'The Weeknd'),
     trackFrom('Save Your Tears', 'The Weeknd'),
-    trackFrom('Less Than Zero', 'The Weeknd')
+    trackFrom('Less Than Zero', 'The Weeknd'),
+    trackFrom('Drive', 'Ed Sheeran'),
+    trackFrom('Lose My Mind', 'Don Toliver'),
+    trackFrom('Just Keep Watching', 'Tate Mcrae')
 ];
 let showAllRecents = false;
 
@@ -787,8 +795,8 @@ function openPlaylist(key) {
 
     currentPlaylistKey = key;
 
-    // Playlist cover
-    playlistCover.src = playlist.cover;
+    // Playlist cover; recover gracefully if an old saved cover path is invalid.
+    setPlaylistCoverWithFallback(playlistCover, playlist.cover);
 
 
     // Playlist title
@@ -965,6 +973,19 @@ function saveCustomPlaylists() {
     localStorage.setItem(CUSTOM_PLAYLISTS_KEY, JSON.stringify(custom));
 }
 
+function setPlaylistCoverWithFallback(image, cover, fallback = 'image/The weeknd.jpg') {
+    if (!image) return;
+    image.onerror = () => {
+        image.onerror = null;
+        image.src = fallback;
+        image.onerror = () => {
+            image.onerror = null;
+            image.src = 'image/MyPlaylist.jpg';
+        };
+    };
+    image.src = cover || fallback;
+}
+
 function renderUserPlaylists() {
     const sidebar = document.getElementById('userPlaylistSidebar');
     const quickLinks = document.getElementById('homeQuickLinks');
@@ -987,14 +1008,22 @@ function renderUserPlaylists() {
         image.className = 'playlist user-playlist-item';
         image.title = playlist.title;
         image.setAttribute('aria-label', `Open playlist ${playlist.title}`);
-        image.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt="">`;
+        const coverImage = document.createElement('img');
+        coverImage.alt = '';
+        setPlaylistCoverWithFallback(coverImage, playlist.cover);
+        image.appendChild(coverImage);
         image.addEventListener('click', () => openPlaylist(key));
         sidebar.appendChild(image);
 
         const card = document.createElement('div');
         card.className = 'quick-card';
         card.dataset.playlist = key;
-        card.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt=""><span>${escapeHTML(playlist.title)}</span>`;
+        const cardImage = document.createElement('img');
+        cardImage.alt = '';
+        setPlaylistCoverWithFallback(cardImage, playlist.cover);
+        const cardTitle = document.createElement('span');
+        cardTitle.textContent = playlist.title;
+        card.append(cardImage, cardTitle);
         quickLinks.appendChild(card);
     });
 }
@@ -1947,7 +1976,7 @@ const POPULAR_RADIO_STATIONS = {
             { title: 'Watermelon Sugar', artist: 'Harry Styles' },
             { title: 'Late Night Talking', artist: 'Harry Styles' },
             { title: 'Attention', artist: 'Charlie Puth' },
-            { title: "We Don't Talk Anymore", artist: 'Charlie Puth, Selena Gomez' },
+            { title: "We Don't Talk Anymore", artist: 'Charlie Puth' },
             { title: 'See You Again', artist: 'Wiz Khalifa, Charlie Puth' },
             { title: 'Flowers', artist: 'Miley Cyrus' },
             { title: 'Shape of You', artist: 'Ed Sheeran' },
