@@ -217,7 +217,26 @@ const PLAYLISTS = {
     },
     poppart: { title: 'Pop-Party', cover: 'image/Pop.jpg', tracks: tracksFromList(POP_SONGS) },
     ishq: { title: 'Ishq Di Baajiyaan Radio', cover: 'image/Ishq.jpg', tracks: tracksFromList(ISHQ_SONGS) },
+    
+    // 🎙️ Our new 10 Podcasts added the exact same way as your songs!
+    podcasts: {
+        title: 'Popular Podcasts',
+        cover: 'image/trending.jpg', // Uses a pre-existing cover photo you already have
+        tracks: [
+            trackFrom('Will AI Replace Coders', 'Tech Wave Podcast'),
+            trackFrom('How to Build Habits', 'Mindset and Growth'),
+            trackFrom('Mystery of Room 104', 'Sarah Koenig True Crime'),
+            trackFrom('Investing for Gen Z', 'Financial Freedom'),
+            trackFrom('What Inside Black Holes', 'The Space Chronicles'),
+            trackFrom('Science of Deep Sleep', 'The Wellness Lab'),
+            trackFrom('How Hip Hop Took Over', 'Behind The Beats'),
+            trackFrom('Alexandria Burning', 'History Retold'),
+            trackFrom('Failing and Pivoting', 'The Startup Blueprint'),
+            trackFrom('Stoic Creative Focus', 'Creative Flow Podcast')
+        ]
+    }
 };
+
 
 // Restore playlists created by the signed-in user. New users start with none.
 function loadCustomPlaylists() {
@@ -778,10 +797,14 @@ function openPlaylist(key) {
     const playlist = PLAYLISTS[key];
     if (!playlist) return;
 
+    // Record interaction so it bumps this custom playlist to the top of the left sidebar
+    if (playlist.isCustom && typeof recordPlaylistInteraction === 'function') {
+        recordPlaylistInteraction(key);
+    }
+ nb
     // ---------------------------------------------------------------
     // Liked Songs is dynamic
     // ---------------------------------------------------------------
-
     const tracks = key === 'liked'
         ? getDynamicLikedTracks()
         : key === 'saved'
@@ -789,24 +812,25 @@ function openPlaylist(key) {
             : playlist.tracks;
 
     if (searchInput) searchInput.value = '';
+
     const playlistSearchField = document.getElementById('playlistSearchInput');
     if (playlistSearchField) playlistSearchField.value = '';
-
 
     currentPlaylistKey = key;
 
     // Playlist cover; recover gracefully if an old saved cover path is invalid.
     setPlaylistCoverWithFallback(playlistCover, playlist.cover);
 
-
     // Playlist title
     playlistTitle.textContent = playlist.title;
 
     const addSongsBtn = document.getElementById('addSongsBtn');
     if (addSongsBtn) addSongsBtn.hidden = !playlist.isCustom;
+
     const playlistManagement = document.getElementById('playlistManagement');
     const playlistManagementMenu = document.getElementById('playlistManagementMenu');
     const playlistManagementTrigger = document.getElementById('playlistManagementTrigger');
+
     if (playlistManagement) playlistManagement.hidden = !playlist.isCustom;
     if (playlistManagementMenu) playlistManagementMenu.hidden = true;
     if (playlistManagementTrigger) playlistManagementTrigger.setAttribute('aria-expanded', 'false');
@@ -814,7 +838,6 @@ function openPlaylist(key) {
     // Dynamic song count
     playlistMeta.textContent =
         `${tracks.length} songs`;
-
 
     // Reset track list
     trackListEl.innerHTML = `
@@ -827,15 +850,12 @@ function openPlaylist(key) {
         </div>
     `;
 
-
     // ---------------------------------------------------------------
     // Empty Liked Songs state
     // ---------------------------------------------------------------
-
     if (key === 'liked' && tracks.length === 0) {
         const emptyState =
             document.createElement('div');
-
         emptyState.className =
             'liked-empty-state';
         emptyState.innerHTML = `
@@ -852,7 +872,6 @@ function openPlaylist(key) {
         return;
     }
 
-
     if (key === 'saved' && tracks.length === 0) {
         const emptyState = document.createElement('div');
         emptyState.className = 'liked-empty-state';
@@ -865,7 +884,6 @@ function openPlaylist(key) {
     // ---------------------------------------------------------------
     // Empty user-created playlist state
     // ---------------------------------------------------------------
-
     if (playlist.isCustom && tracks.length === 0) {
         const emptyState = document.createElement('div');
         emptyState.className = 'playlist-empty-state';
@@ -883,15 +901,11 @@ function openPlaylist(key) {
     // ---------------------------------------------------------------
     // Render tracks
     // ---------------------------------------------------------------
-
     tracks.forEach((track, idx) => {
-
         const row =
             document.createElement('div');
-
         row.className =
             'track-row';
-
         row.innerHTML = `
             <span class="track-num">
                 ${idx + 1}
@@ -931,7 +945,6 @@ function openPlaylist(key) {
         // -----------------------------------------------------------
         // Clicking the row plays the song
         // -----------------------------------------------------------
-
         row.addEventListener(
             'click',
             (event) => {
@@ -944,6 +957,7 @@ function openPlaylist(key) {
 
     showView(playlistView);
 }
+
 
 const homeQuickLinks = document.getElementById('homeQuickLinks');
 
@@ -984,6 +998,40 @@ function setPlaylistCoverWithFallback(image, cover, fallback = 'image/The weeknd
         };
     };
     image.src = cover || fallback;
+
+// =====================================================================
+// Dynamic Sidebar Rendering (Recently Played first)
+// =====================================================================
+const PLAYLIST_ORDER_KEY = 'echobeat_playlist_order';
+
+function getPlaylistOrder() {
+    try {
+        const savedOrder = JSON.parse(localStorage.getItem(PLAYLIST_ORDER_KEY));
+        if (Array.isArray(savedOrder)) {
+            return savedOrder;
+        }
+    } catch {}
+    
+    // Default fallback order if empty
+    return Object.keys(PLAYLISTS);
+}
+
+function savePlaylistOrder(order) {
+    localStorage.setItem(PLAYLIST_ORDER_KEY, JSON.stringify(order));
+}
+
+// Moves a playlist key to the front of the sidebar
+function recordPlaylistInteraction(key) {
+    if (!key || !PLAYLISTS[key]) return;
+    
+    let order = getPlaylistOrder();
+    
+    // Remove key if it already exists, then unshift to put it at index 0 (top)
+    order = order.filter(item => item !== key);
+    order.unshift(key);
+    
+    savePlaylistOrder(order);
+    renderUserPlaylists(); // Re-render sidebar instantly
 }
 
 function renderUserPlaylists() {
@@ -994,27 +1042,49 @@ function renderUserPlaylists() {
     sidebar.replaceChildren();
     quickLinks.replaceChildren();
 
+    // 1. Liked Songs is always pinned to the top of Quick Links
     const likedCard = document.createElement('div');
     likedCard.className = 'quick-card';
     likedCard.dataset.playlist = 'liked';
     likedCard.innerHTML = '<img src="image/Liked.jpg" alt=""><span>Liked Songs</span>';
     quickLinks.appendChild(likedCard);
 
-    Object.entries(PLAYLISTS).forEach(([key, playlist]) => {
-        if (!playlist.isCustom) return;
+    // 2. Get the sorted order of playlists
+    const sortedKeys = getPlaylistOrder();
+
+    // Ensure any newly added playlists (that aren't in localStorage yet) are appended
+    Object.keys(PLAYLISTS).forEach(key => {
+        if (!sortedKeys.includes(key)) {
+            sortedKeys.push(key);
+        }
+    });
+
+    // 3. Render items in the left sidebar (Custom User Playlists) in sorted order
+    sortedKeys.forEach(key => {
+        const playlist = PLAYLISTS[key];
+        if (!playlist || !playlist.isCustom) return; // Only custom user playlists go in the left sidebar
 
         const image = document.createElement('button');
         image.type = 'button';
         image.className = 'playlist user-playlist-item';
         image.title = playlist.title;
         image.setAttribute('aria-label', `Open playlist ${playlist.title}`);
+<<<<<<< HEAD
         const coverImage = document.createElement('img');
         coverImage.alt = '';
         setPlaylistCoverWithFallback(coverImage, playlist.cover);
         image.appendChild(coverImage);
         image.addEventListener('click', () => openPlaylist(key));
+=======
+        image.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt="">`;
+        image.addEventListener('click', () => {
+            recordPlaylistInteraction(key); // Move to top on click!
+            openPlaylist(key);
+        });
+>>>>>>> 5c4c848 (chore: setup .gitignore and clean untracked files)
         sidebar.appendChild(image);
 
+        // Populate Quick Links in the same dynamic order
         const card = document.createElement('div');
         card.className = 'quick-card';
         card.dataset.playlist = key;
@@ -1027,6 +1097,7 @@ function renderUserPlaylists() {
         quickLinks.appendChild(card);
     });
 }
+
 
 function showEchoBeatDialog({ eyebrow = 'YOUR MUSIC', title, message, confirmText = 'Confirm', cancelText = 'Cancel', danger = false, onConfirm }) {
     let modal = document.getElementById('echoBeatActionDialog');
@@ -1144,6 +1215,7 @@ function createUserPlaylist() {
 function submitNewPlaylist(event) {
     event.preventDefault();
     const title = (newPlaylistName?.value || '').trim().replace(/\s+/g, ' ');
+
     if (!title) {
         showToast('Please enter a playlist name');
         newPlaylistName?.focus();
@@ -1154,6 +1226,7 @@ function submitNewPlaylist(event) {
     const duplicate = Object.values(PLAYLISTS).some((playlist) =>
         playlist.title.trim().replace(/\s+/g, ' ').toLocaleLowerCase() === normalizedTitle
     );
+
     if (duplicate) {
         showToast('A playlist with that name already exists. Choose a different name.');
         newPlaylistName?.focus();
@@ -1162,6 +1235,7 @@ function submitNewPlaylist(event) {
     }
 
     const key = `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
     PLAYLISTS[key] = {
         title,
         cover: getNextPlaylistCover(),
@@ -1170,11 +1244,18 @@ function submitNewPlaylist(event) {
     };
 
     saveCustomPlaylists();
+    
+    // Record interaction so the newly created playlist automatically sits at the top of the sidebar
+    if (typeof recordPlaylistInteraction === 'function') {
+        recordPlaylistInteraction(key);
+    }
+    
     renderUserPlaylists();
     closeCreatePlaylistModal();
     openPlaylist(key);
     showToast(`Created ${title}`);
 }
+
 
 if (createPlaylistForm) createPlaylistForm.addEventListener('submit', submitNewPlaylist);
 if (closeCreatePlaylistBtn) closeCreatePlaylistBtn.addEventListener('click', closeCreatePlaylistModal);
@@ -2026,15 +2107,25 @@ document.addEventListener('click', (event) => {
 document.querySelectorAll('[data-home-filter]').forEach((button) => {
     button.addEventListener('click', () => {
         const filter = button.dataset.homeFilter;
+        
+        // Active pill style toggle
         document.querySelectorAll('[data-home-filter]').forEach((pill) => pill.classList.toggle('active', pill === button));
-        document.querySelectorAll('.home-music-section').forEach((section) => { section.hidden = filter === 'podcasts'; });
-        document.querySelectorAll('.home-podcast-section').forEach((section) => { section.hidden = filter === 'music'; });
-        const quickLinks = document.getElementById('homeQuickLinks');
-        if (quickLinks) quickLinks.hidden = filter === 'podcasts';
-        const announcement = document.querySelector('.home-announcement');
-        if (announcement) announcement.hidden = filter === 'podcasts';
+        
+        if (filter === 'podcasts') {
+            // Instantly open our new podcasts playlist page in the UI!
+            openPlaylist('podcasts');
+            showToast('🎙️ Welcome to EchoBeat Podcasts');
+        } else {
+            // Restore default view filters for All / Music
+            document.querySelectorAll('.home-music-section').forEach((section) => { section.hidden = filter === 'podcasts'; });
+            const quickLinks = document.getElementById('homeQuickLinks');
+            if (quickLinks) quickLinks.hidden = false;
+            const announcement = document.querySelector('.home-announcement');
+            if (announcement) announcement.hidden = false;
+        }
     });
 });
+
 
 const POPULAR_RADIO_STATIONS = {
     'the-weeknd': {
@@ -2293,130 +2384,159 @@ if (searchIcon) {
 
 
 // ---------------------------------------------------------------------
-// 3. SEARCH — search songs and playlists
+// 3. SPOTIFY-LIKE LIVE SEARCH
 // ---------------------------------------------------------------------
+const mainSearchInput = document.getElementById('mainSearchInput') || document.querySelector('.search-bar input');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+const searchDropdown = document.getElementById('searchResultsDropdown');
+const bestMatchSection = document.getElementById('bestMatchSection');
+const bestMatchCard = document.getElementById('bestMatchCard');
+const songsMatchSection = document.getElementById('songsMatchSection');
+const songsResultList = document.getElementById('songsResultList');
+const noSearchResults = document.getElementById('noSearchResults');
+const noResultsQuery = document.getElementById('noResultsQuery');
 
-function performSearch() {
+function closeSearchDropdown() {
+    if (searchDropdown) searchDropdown.hidden = true;
+}
 
-    if (!searchInput) return;
+function handleLiveSearch() {
+    if (!mainSearchInput || !searchDropdown) return;
 
-    const query = searchInput.value.trim().toLowerCase();
+    const query = mainSearchInput.value.trim().toLowerCase();
 
+    // Show/hide Clear (X) button
+    if (clearSearchBtn) {
+        clearSearchBtn.hidden = query.length === 0;
+    }
+
+    // Hide dropdown if query is empty
     if (!query) {
-        showToast('Type a song or playlist to search');
-        searchInput.focus();
+        closeSearchDropdown();
         return;
     }
 
-    // First search playlist names
-    for (const [key, playlist] of Object.entries(PLAYLISTS)) {
+    // Pull catalogue of all tracks
+    const allTracks = getAllAvailableTracks();
 
-        if (playlist.title.toLowerCase().includes(query)) {
+    // Filter by title or artist
+    const matches = allTracks.filter(track =>
+        track.title.toLowerCase().includes(query) ||
+        track.artist.toLowerCase().includes(query)
+    );
 
-            openPlaylist(key);
-            showToast(`Opened ${playlist.title}`);
-            return;
-        }
+    if (matches.length === 0) {
+        bestMatchSection.hidden = true;
+        songsMatchSection.hidden = true;
+        noResultsQuery.textContent = mainSearchInput.value.trim();
+        noSearchResults.hidden = false;
+        searchDropdown.hidden = false;
+        return;
     }
 
-    // Search every song in every playlist
-    for (const [key, playlist] of Object.entries(PLAYLISTS)) {
+    noSearchResults.hidden = true;
 
-        const songIndex = playlist.tracks.findIndex(track =>
-            track.title.toLowerCase().includes(query) ||
-            track.artist.toLowerCase().includes(query)
-        );
+    // 1. Render Best Match (Top result)
+    const bestMatch = matches[0];
+    bestMatchCard.innerHTML = `
+        <img src="${escapeHTML(bestMatch.cover)}" alt="${escapeHTML(bestMatch.title)}" onerror="this.src='image/All the Stars.jpg'">
+        <div class="best-match-info">
+            <div class="title">${escapeHTML(bestMatch.title)}</div>
+            <div class="meta">
+                <span class="tag">Song</span>
+                <span>${escapeHTML(bestMatch.artist)}</span>
+            </div>
+        </div>
+        <div class="play-action">
+            <i class="fa-solid fa-play"></i>
+        </div>
+    `;
+    bestMatchCard.onclick = () => {
+        currentPlaylistKey = null;
+        playQueue([bestMatch], 0);
+        showToast(`Playing ${bestMatch.title}`);
+        closeSearchDropdown();
+    };
+    bestMatchSection.hidden = false;
 
-        if (songIndex !== -1) {
+    // 2. Render Songs List (up to 5 like Spotify)
+    songsResultList.innerHTML = '';
+    const topMatches = matches.slice(0, 5);
 
-            openPlaylist(key);
+    topMatches.forEach((track) => {
+        const item = document.createElement('div');
+        item.className = 'search-track-item';
+        item.innerHTML = `
+            <div class="search-track-left">
+                <img src="${escapeHTML(track.cover)}" alt="${escapeHTML(track.title)}" onerror="this.src='image/All the Stars.jpg'">
+                <div class="search-track-details">
+                    <h4>${escapeHTML(track.title)}</h4>
+                    <p>${escapeHTML(track.artist)}</p>
+                </div>
+            </div>
+            <div class="search-track-right">
+                <i class="fa-solid fa-circle-play search-track-play-icon"></i>
+            </div>
+        `;
 
-            // Start the matching song
-            playQueue(playlist.tracks, songIndex);
-
-            showToast(`Playing ${playlist.tracks[songIndex].title}`);
-            return;
-        }
-    }
-
-    // Search the single-track cards
-    for (const [key, track] of Object.entries(SINGLE_TRACKS)) {
-
-        if (
-            track.title.toLowerCase().includes(query) ||
-            track.artist.toLowerCase().includes(query)
-        ) {
-
-            playSingleTrack(key);
-            return;
-        }
-    }
-
-    showToast(`No results found for "${searchInput.value}"`);
-}
-
-if (searchInput) {
-    searchInput.addEventListener('input', () => {
-        if (!playlistView || playlistView.hidden) return;
-        const query = searchInput.value.trim().toLocaleLowerCase();
-        let visibleCount = 0;
-        trackListEl.querySelectorAll('.track-row').forEach(row => {
-            const title = row.querySelector('.track-text h4')?.textContent.toLocaleLowerCase() || '';
-            const artist = row.querySelector('.track-text p')?.textContent.toLocaleLowerCase() || '';
-            const matches = !query || title.includes(query) || artist.includes(query);
-            row.hidden = !matches;
-            if (matches) visibleCount++;
+        item.addEventListener('click', () => {
+            currentPlaylistKey = null;
+            // Play queue of filtered matches starting with this song
+            playQueue(matches, matches.indexOf(track));
+            showToast(`Playing ${track.title}`);
+            closeSearchDropdown();
         });
-        const existing = trackListEl.querySelector('.playlist-search-empty');
-        if (existing) existing.remove();
-        if (query && visibleCount === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'playlist-search-empty';
-            empty.textContent = `No songs match “${searchInput.value.trim()}”`;
-            trackListEl.appendChild(empty);
+
+        songsResultList.appendChild(item);
+    });
+
+    songsMatchSection.hidden = false;
+    searchDropdown.hidden = false;
+}
+
+// Input event listener for instant typing results
+if (mainSearchInput) {
+    mainSearchInput.addEventListener('input', handleLiveSearch);
+
+    mainSearchInput.addEventListener('focus', () => {
+        if (mainSearchInput.value.trim()) {
+            handleLiveSearch();
         }
     });
 
-    // Press Enter to search
-    searchInput.addEventListener('keydown', (event) => {
-
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            performSearch();
+    // Enter key plays the top result immediately
+    mainSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstResult = songsResultList?.querySelector('.search-track-item');
+            if (firstResult) {
+                firstResult.click();
+            }
+        } else if (e.key === 'Escape') {
+            closeSearchDropdown();
+            mainSearchInput.blur();
         }
-
-    });
-
-}
-
-
-// Clicking the search icon performs search if text exists,
-// otherwise it simply focuses the search bar.
-if (searchIcon) {
-
-    searchIcon.addEventListener('click', () => {
-
-        if (searchInput && searchInput.value.trim()) {
-            performSearch();
-        } else {
-            focusSearch();
-        }
-
-    });
-
-}
-
-const savedSongsButton = document.querySelector('.search-bar .fa-box-archive');
-if (savedSongsButton) {
-    savedSongsButton.style.cursor = 'pointer';
-    savedSongsButton.title = 'Saved Songs';
-    savedSongsButton.setAttribute('role', 'button');
-    savedSongsButton.setAttribute('tabindex', '0');
-    savedSongsButton.addEventListener('click', () => openPlaylist('saved'));
-    savedSongsButton.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlaylist('saved'); }
     });
 }
+
+// Clear button logic
+if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', (event) => {
+        event.stopPropagation(); // 👈 Stops the click from bubbling up and keeping the dropdown open!
+        mainSearchInput.value = '';
+        clearSearchBtn.hidden = true;
+        closeSearchDropdown();
+        mainSearchInput.focus();
+    });
+}
+
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.header-center')) {
+        closeSearchDropdown();
+    }
+});
 
 
 // ---------------------------------------------------------------------
@@ -3168,3 +3288,146 @@ if (playlistSearchInput) {
         }
     });
 }
+
+
+// =====================================================================
+// 1. Explicit Manual Definition for Podcasts Playlist
+// =====================================================================
+PLAYLISTS['podcasts'] = {
+    title: 'Popular Podcasts',
+    cover: 'image/songs/Will AI Replace Coders.jpg',
+    isCustom: false,
+    tracks: [
+        {
+            title: 'Will AI Replace Coders',
+            artist: 'Tech Wave Podcast',
+            cover: 'image/songs/Will AI Replace Coders.jpg',
+            src: 'music/Will AI Replace Coders.mp3',
+            file: 'music/Will AI Replace Coders.mp3'
+        },
+        {
+            title: 'How to Build Habits',
+            artist: 'Mindset & Growth',
+            cover: 'image/songs/How to Build Habits.jpg',
+            src: 'music/How to Build Habits.mp3',
+            file: 'music/How to Build Habits.mp3'
+        },
+        {
+            title: 'Mystery of Room 104',
+            artist: 'Sarah Koenig True Crime',
+            cover: 'image/songs/Mystery of Room 104.jpg',
+            src: 'music/Mystery of Room 104.mp3',
+            file: 'music/Mystery of Room 104.mp3'
+        },
+        {
+            title: 'Investing for Gen Z',
+            artist: 'Financial Freedom',
+            cover: 'image/songs/Investing for Gen Z.jpg',
+            src: 'music/Investing for Gen Z.mp3',
+            file: 'music/Investing for Gen Z.mp3'
+        },
+        {
+            title: 'What Inside Black Holes',
+            artist: 'Cosmos & Beyond',
+            cover: 'image/songs/What Inside Black Holes.jpg',
+            src: 'music/What Inside Black Holes.mp3',
+            file: 'music/What Inside Black Holes.mp3'
+        },
+        {
+            title: 'Science of Deep Sleep',
+            artist: 'Neuroscience Daily',
+            cover: 'image/songs/Science of Deep Sleep.jpg',
+            src: 'music/Science of Deep Sleep.mp3',
+            file: 'music/Science of Deep Sleep.mp3'
+        },
+        {
+            title: 'How Hip Hop Took Over',
+            artist: 'Culture Beats',
+            cover: 'image/songs/How Hip Hop Took Over.jpg',
+            src: 'music/How Hip Hop Took Over.mp3',
+            file: 'music/How Hip Hop Took Over.mp3'
+        },
+        {
+            title: 'Alexandria Burning',
+            artist: 'History Unearthed',
+            cover: 'image/songs/Alexandria Burning.jpg',
+            src: 'music/Alexandria Burning.mp3',
+            file: 'music/Alexandria Burning.mp3'
+        },
+        {
+            title: 'Failing and Pivoting',
+            artist: 'Startup Stories',
+            cover: 'image/songs/Failing and Pivoting.jpg',
+            src: 'music/Failing and Pivoting.mp3',
+            file: 'music/Failing and Pivoting.mp3'
+        },
+        {
+            title: 'Stoic Creative Focus',
+            artist: 'Modern Stoicism',
+            cover: 'image/songs/Stoic Creative Focus.jpg',
+            src: 'music/Stoic Creative Focus.mp3',
+            file: 'music/Stoic Creative Focus.mp3'
+        }
+    ]
+};
+
+// =====================================================================
+// 2. Render Podcasts in Homepage Row Slider
+// =====================================================================
+function renderHomepagePodcasts() {
+    const slider = document.getElementById('homePodcastSlider');
+    const podcastPlaylist = PLAYLISTS['podcasts'];
+    if (!slider || !podcastPlaylist) return;
+
+    slider.innerHTML = '';
+
+    // Render individual podcast cards
+    podcastPlaylist.tracks.forEach((track, idx) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'podcast-slider-card';
+        card.setAttribute('aria-label', `Play ${track.title} by ${track.artist}`);
+
+        card.innerHTML = `
+            <img src="${track.cover}" alt="${track.title} cover" loading="lazy">
+            <h3>${track.title}</h3>
+            <p>${track.artist}</p>
+        `;
+
+        // Click handler: initiates playback
+        card.addEventListener('click', () => {
+            currentPlaylistKey = 'podcasts';
+
+            if (typeof playQueue === 'function') {
+                playQueue(podcastPlaylist.tracks, idx);
+            } else if (typeof playSong === 'function') {
+                playSong(track);
+            }
+
+            if (typeof showToast === 'function') {
+                showToast(`🎙️ Playing: ${track.title}`);
+            }
+        });
+
+        slider.appendChild(card);
+    });
+
+    // Wire up "Show all" button to open the full playlist view
+    const showAllBtn = document.getElementById('homePodcastsShowAll');
+    if (showAllBtn) {
+        showAllBtn.onclick = (e) => {
+            e.preventDefault();
+            if (typeof openPlaylist === 'function') {
+                openPlaylist('podcasts');
+            }
+        };
+    }
+}
+
+// Ensure execution on page ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderHomepagePodcasts);
+} else {
+    renderHomepagePodcasts();
+}
+
