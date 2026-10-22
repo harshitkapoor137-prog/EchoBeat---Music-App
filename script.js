@@ -997,6 +997,7 @@ function setPlaylistCoverWithFallback(image, cover, fallback = 'image/The weeknd
         };
     };
     image.src = cover || fallback;
+}
 
 // =====================================================================
 // Dynamic Sidebar Rendering (Recently Played first)
@@ -1068,19 +1069,16 @@ function renderUserPlaylists() {
         image.className = 'playlist user-playlist-item';
         image.title = playlist.title;
         image.setAttribute('aria-label', `Open playlist ${playlist.title}`);
-<<<<<<< HEAD
         const coverImage = document.createElement('img');
         coverImage.alt = '';
         setPlaylistCoverWithFallback(coverImage, playlist.cover);
         image.appendChild(coverImage);
         image.addEventListener('click', () => openPlaylist(key));
-=======
         image.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt="">`;
         image.addEventListener('click', () => {
             recordPlaylistInteraction(key); // Move to top on click!
             openPlaylist(key);
         });
->>>>>>> 5c4c848 (chore: setup .gitignore and clean untracked files)
         sidebar.appendChild(image);
 
         // Populate Quick Links in the same dynamic order
