@@ -8,7 +8,6 @@ const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
 const usernameError = document.getElementById('usernameError');
 const passwordError = document.getElementById('passwordError');
-const togglePass = document.getElementById('togglePass');
 const submitBtn = document.getElementById('submitBtn');
 const toast = document.getElementById('toast');
 
@@ -16,7 +15,7 @@ const loginPage = document.getElementById('loginPage');
 const mainApp = document.getElementById('mainApp');
 const loadingScreen = document.getElementById('loading-screen');
 
-// ----- Element references (phone login) -----
+// ----- Element references (phone / forgot password) -----
 const phoneLoginScreen = document.getElementById('phoneLoginScreen');
 const phoneForm = document.getElementById('phoneForm');
 const phoneNumberInput = document.getElementById('phoneNumber');
@@ -62,12 +61,13 @@ const videoModal = document.getElementById('videoModal');
 const videoPlayer = document.getElementById('videoPlayer');
 const videoModalClose = document.getElementById('videoModalClose');
 
-// Only allow @gmail.com addresses in the username field
+// Only allow @gmail.com addresses for the Google login
 const GMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
 const PHONE_REGEX = /^\d{10}$/;
 
 const AUTH_KEY = 'echobeat_auth';
 const SETTINGS_KEY = 'echobeat_settings';
+const LIKED_SONGS_KEY = 'echobeat_liked_songs';
 
 // =====================================================================
 // Song / playlist data
@@ -146,7 +146,7 @@ const POP_SONGS = [
     { title: 'As It Was', artist: 'Harry Styles' },
     { title: 'Watermelon Sugar', artist: 'Harry Styles' },
     { title: 'Flowers', artist: 'Miley Cyrus' },
-    
+
 ];
 
 // Hindi dance songs for Shuffle & Vibe
@@ -507,9 +507,9 @@ function renderQueue() {
         item.className = 'queue-item';
         item.style.cursor = 'pointer';
 
-item.addEventListener('click', () => {
-    loadTrack(currentIndex + 1 + index, true);
-});
+        item.addEventListener('click', () => {
+            loadTrack(currentIndex + 1 + index, true);
+        });
 
         const img = document.createElement('img');
         img.src = song.cover;
@@ -556,7 +556,7 @@ repeatBtn.addEventListener('click', () => {
 
     repeatBtn.style.color =
         repeatMode === 'off' ? '#b3b3b3' : '#1DB954';
-        repeatBtn.classList.toggle('active', repeatMode !== 'off');
+    repeatBtn.classList.toggle('active', repeatMode !== 'off');
 
     repeatBtn.title = `Repeat: ${repeatMode}`;
 
@@ -1365,9 +1365,11 @@ if (playAllBtn) {
         const tracks =
             currentPlaylistKey === 'liked'
                 ? getDynamicLikedTracks()
-                : playlist.tracks;
+                : currentPlaylistKey === 'saved'
+                    ? getDynamicSavedTracks()
+                    : playlist.tracks;
         if (!tracks.length) {
-            showToast(currentPlaylistKey && PLAYLISTS[currentPlaylistKey]?.isCustom ? 'Add songs to this playlist first' : 'No liked songs to play');
+            showToast(currentPlaylistKey && PLAYLISTS[currentPlaylistKey]?.isCustom ? 'Add songs to this playlist first' : 'No songs to play yet');
             return;
         }
         playQueue(tracks, 0);
@@ -1506,31 +1508,38 @@ function setProfileIdentity(identifier) {
     if (profileEmailEl) profileEmailEl.textContent = identifier || 'EchoBeat user';
 }
 
-function enterApp(identifier, method) {
-    loginPage.style.display = 'none';
-    phoneLoginScreen.style.display = 'none';
+function enterApp(identifier, method, remember = false) {
+    document.querySelectorAll('.auth-screen').forEach((screen) => {
+        screen.style.display = 'none';
+    });
     mainApp.style.display = 'flex';
     showView(homeView);
     setProfileIdentity(identifier);
-    localStorage.setItem(AUTH_KEY, JSON.stringify({ identifier, method, loggedIn: true }));
-}
 
+    const data = JSON.stringify({ identifier, method, loggedIn: true });
+    localStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(AUTH_KEY);
+    // Remember me -> survives closing the browser. Otherwise only this tab session.
+    (remember ? localStorage : sessionStorage).setItem(AUTH_KEY, data);
+}
 function logout() {
     localStorage.removeItem(AUTH_KEY);
+sessionStorage.removeItem(AUTH_KEY);
     audioPlayer.pause();
     isPlaying = false;
     setPlayIcon(false);
     mainApp.style.display = 'none';
-    phoneLoginScreen.style.display = 'none';
-    loginPage.style.display = 'flex';
+    showAuthScreen('login');
     showToast('Signed out of EchoBeat');
 }
 
 function restoreSession() {
     try {
-        const auth = JSON.parse(localStorage.getItem(AUTH_KEY));
+        const auth = JSON.parse(
+            localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY)
+        );
         if (auth && auth.loggedIn) {
-            enterApp(auth.identifier, auth.method);
+            enterApp(auth.identifier, auth.method, !!localStorage.getItem(AUTH_KEY));
             return true;
         }
     } catch {
@@ -1550,14 +1559,63 @@ window.addEventListener('load', () => {
 });
 
 // =====================================================================
-// Password visibility
+// AUTH: login, Google / Apple, forgot password (phone), sign up
 // =====================================================================
 
-togglePass.addEventListener('click', () => {
-    const isHidden = passwordInput.type === 'password';
-    passwordInput.type = isHidden ? 'text' : 'password';
-    togglePass.textContent = isHidden ? 'Hide' : 'Show';
-});
+const USERS_KEY = 'echobeat_users';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9._-]{3,20}$/;
+
+// ----- Extra element references (Google / Apple screen) -----
+const providerPage = document.getElementById('providerPage');
+const providerForm = document.getElementById('providerForm');
+const providerIcon = document.getElementById('providerIcon');
+const providerTitle = document.getElementById('providerTitle');
+const providerIdLabel = document.getElementById('providerIdLabel');
+const providerId = document.getElementById('providerId');
+const providerIdError = document.getElementById('providerIdError');
+const providerPassword = document.getElementById('providerPassword');
+const providerPasswordError = document.getElementById('providerPasswordError');
+const providerSubmitBtn = document.getElementById('providerSubmitBtn');
+
+// ----- Extra element references (sign up) -----
+const signupPage = document.getElementById('signupPage');
+const signupForm = document.getElementById('signupForm');
+const signupUsername = document.getElementById('signupUsername');
+const signupUsernameError = document.getElementById('signupUsernameError');
+const signupPassword = document.getElementById('signupPassword');
+const signupPasswordError = document.getElementById('signupPasswordError');
+const confirmPassword = document.getElementById('confirmPassword');
+const confirmPasswordError = document.getElementById('confirmPasswordError');
+const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+
+// ----- Helpers -----
+const authScreens = {
+    login: loginPage,
+    provider: providerPage,
+    phone: phoneLoginScreen,
+    signup: signupPage,
+};
+
+function showAuthScreen(name) {
+    Object.values(authScreens).forEach((screen) => {
+        if (screen) screen.style.display = 'none';
+    });
+    if (authScreens[name]) authScreens[name].style.display = 'flex';
+    window.scrollTo(0, 0);
+}
+
+function getUsers() {
+    try {
+        return JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+    } catch {
+        return {};
+    }
+}
+
+function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
 
 function clearError(input, errorEl) {
     input.classList.remove('error');
@@ -1572,41 +1630,53 @@ function setError(input, errorEl, message) {
     errorEl.classList.add('show');
 }
 
-usernameInput.addEventListener('input', () => {
-    if (usernameInput.value.trim()) clearError(usernameInput, usernameError);
-});
-
-passwordInput.addEventListener('input', () => {
-    if (passwordInput.value.trim()) clearError(passwordInput, passwordError);
-});
-
+let toastTimer = null;
 function showToast(message) {
     toast.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2600);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
+// Clear a field's error as soon as the user types in it
+document.querySelectorAll('.auth-screen input').forEach((input) => {
+    input.addEventListener('input', () => {
+        input.classList.remove('error');
+        const err = input.closest('.field')?.querySelector('.error-msg');
+        if (err) err.classList.remove('show');
+    });
+});
+
+// Show / hide password (works for every password field)
+document.querySelectorAll('.toggle-pass').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const hidden = input.type === 'password';
+        input.type = hidden ? 'text' : 'password';
+        btn.textContent = hidden ? 'Hide' : 'Show';
+    });
+});
+
 // =====================================================================
-// Email + password login
+// 1. Username + password login
 // =====================================================================
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
     let valid = true;
-    const email = usernameInput.value.trim();
 
-    if (!email) {
-        setError(usernameInput, usernameError, 'Please enter your Gmail address.');
-        valid = false;
-    } else if (!GMAIL_REGEX.test(email)) {
-        setError(usernameInput, usernameError, 'Please enter a valid Gmail address (e.g. name@gmail.com).');
+    if (!username) {
+        setError(usernameInput, usernameError, 'Please enter your username.');
         valid = false;
     } else {
         clearError(usernameInput, usernameError);
     }
 
-    if (!passwordInput.value.trim()) {
+    if (!password) {
         setError(passwordInput, passwordError, 'Please enter your password.');
         valid = false;
     } else {
@@ -1615,55 +1685,142 @@ form.addEventListener('submit', (e) => {
 
     if (!valid) return;
 
+    const users = getUsers();
+    const account = users[username.toLowerCase()];
+
+    if (!account) {
+        setError(usernameInput, usernameError, 'No account found with that username. Please sign up first.');
+        return;
+    }
+    if (account.password !== password) {
+        setError(passwordInput, passwordError, 'Incorrect password. Please try again.');
+        return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = 'Logging in...';
 
     setTimeout(() => {
         showToast('Logged in to EchoBeat 🎧');
         form.reset();
-
-        setTimeout(() => {
-            enterApp(email, 'email');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Log in';
-        }, 800);
-    }, 1200);
+        enterApp(account.username, 'username', document.getElementById('remember').checked);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Log in';
+    }, 700);
 });
 
 // =====================================================================
-// Social login buttons (placeholders only — no real OAuth wired up,
-// so they just show a toast and stay on the login page)
+// 2. Google / Apple login (Gmail or Apple ID + password)
 // =====================================================================
+
+const PROVIDERS = {
+    Google: {
+        title: 'Continue with Google',
+        label: 'Gmail address',
+        placeholder: 'yourname@gmail.com',
+        regex: GMAIL_REGEX,
+        required: 'Please enter your Gmail address.',
+        invalid: 'Please enter a valid Gmail address (e.g. name@gmail.com).',
+    },
+    Apple: {
+        title: 'Continue with Apple',
+        label: 'Apple ID',
+        placeholder: 'name@icloud.com',
+        regex: EMAIL_REGEX,
+        required: 'Please enter your Apple ID.',
+        invalid: 'Please enter a valid Apple ID (usually your email address).',
+    },
+};
+
+let activeProvider = 'Google';
 
 document.querySelectorAll('.social-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-        const provider = btn.dataset.provider || 'your account';
-        showToast(`Continuing with ${provider}...`);
+        activeProvider = btn.dataset.provider;
+        const cfg = PROVIDERS[activeProvider];
+
+        providerTitle.textContent = cfg.title;
+        providerIdLabel.textContent = cfg.label;
+        providerId.placeholder = cfg.placeholder;
+        providerIcon.innerHTML = btn.querySelector('svg').outerHTML;
+
+        providerForm.reset();
+        clearError(providerId, providerIdError);
+        clearError(providerPassword, providerPasswordError);
+
+        showAuthScreen('provider');
+        providerId.focus();
     });
 });
 
+providerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const cfg = PROVIDERS[activeProvider];
+    const id = providerId.value.trim();
+    const password = providerPassword.value;
+    let valid = true;
+
+    if (!id) {
+        setError(providerId, providerIdError, cfg.required);
+        valid = false;
+    } else if (!cfg.regex.test(id)) {
+        setError(providerId, providerIdError, cfg.invalid);
+        valid = false;
+    } else {
+        clearError(providerId, providerIdError);
+    }
+
+    if (!password) {
+        setError(providerPassword, providerPasswordError, 'Please enter your password.');
+        valid = false;
+    } else if (password.length < 6) {
+        setError(providerPassword, providerPasswordError, 'Password must be at least 6 characters.');
+        valid = false;
+    } else {
+        clearError(providerPassword, providerPasswordError);
+    }
+
+    if (!valid) return;
+
+    // NOTE: demo only. Real Google / Apple sign-in needs their OAuth SDKs and a backend.
+    providerSubmitBtn.disabled = true;
+    providerSubmitBtn.textContent = 'Logging in...';
+
+    setTimeout(() => {
+        showToast(`Logged in with ${activeProvider} 🎧`);
+        enterApp(id, activeProvider.toLowerCase());
+        providerForm.reset();
+        providerSubmitBtn.disabled = false;
+        providerSubmitBtn.textContent = 'Log in';
+    }, 800);
+});
+
+document.getElementById('providerBackLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showAuthScreen('login');
+});
+
 // =====================================================================
-// Phone number login (via "Forgot your password?")
+// 3. Forgot password -> phone number -> verification link
 // =====================================================================
 
 document.getElementById('forgotLink').addEventListener('click', (e) => {
     e.preventDefault();
-    loginPage.style.display = 'none';
-    phoneLoginScreen.style.display = 'flex';
+    phoneForm.reset();
+    clearError(phoneNumberInput, phoneError);
     phoneStatus.textContent = '';
-    phoneStatus.classList.remove('error');
+    showAuthScreen('phone');
 });
 
 document.getElementById('backToLoginLink').addEventListener('click', (e) => {
     e.preventDefault();
-    phoneLoginScreen.style.display = 'none';
-    loginPage.style.display = 'flex';
+    showAuthScreen('login');
 });
 
 phoneNumberInput.addEventListener('input', () => {
     // keep digits only, max 10
     phoneNumberInput.value = phoneNumberInput.value.replace(/\D/g, '').slice(0, 10);
-    if (phoneNumberInput.value.trim()) clearError(phoneNumberInput, phoneError);
 });
 
 phoneForm.addEventListener('submit', (e) => {
@@ -1679,168 +1836,102 @@ phoneForm.addEventListener('submit', (e) => {
 
     phoneSubmitBtn.disabled = true;
     phoneSubmitBtn.textContent = 'Sending...';
-    phoneStatus.classList.remove('error');
     phoneStatus.textContent = '';
 
-    localStorage.setItem('echobeat_phone', phone);
-
+    // NOTE: demo only. Sending a real SMS needs a backend / SMS service.
     setTimeout(() => {
-        phoneStatus.textContent = `Verification link sent to +91 ${phone}. Logging you in...`;
+        phoneStatus.textContent = `Verification link sent to +91 ${phone}.`;
         phoneSubmitBtn.textContent = 'Link sent';
 
         setTimeout(() => {
-            enterApp(phone, 'phone');
             phoneSubmitBtn.disabled = false;
             phoneSubmitBtn.textContent = 'Send verification link';
             phoneForm.reset();
             phoneStatus.textContent = '';
-        }, 5000);
+            showAuthScreen('login');
+            showToast('Check your phone for the verification link');
+        }, 2500);
     }, 900);
 });
 
 // =====================================================================
-// Sign Up Page
+// 4. Sign up (username, password, re-confirm password)
 // =====================================================================
 
-// Open sign up page
 document.getElementById('signupLink').addEventListener('click', (e) => {
     e.preventDefault();
-
-    loginPage.style.display = 'none';
-    signupPage.style.display = 'flex';
     signupForm.reset();
+    [
+        [signupUsername, signupUsernameError],
+        [signupPassword, signupPasswordError],
+        [confirmPassword, confirmPasswordError],
+    ].forEach(([input, err]) => clearError(input, err));
+    showAuthScreen('signup');
 });
 
+document.getElementById('loginLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showAuthScreen('login');
+});
 
-// Go back to login page
-const legacyLoginLink = document.getElementById('loginLink');
-if (legacyLoginLink) {
-    legacyLoginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        const signupPageElement = document.getElementById('signupPage');
-        if (signupPageElement) signupPageElement.style.display = 'none';
-        if (loginPage) loginPage.style.display = 'flex';
-    });
-}
-
-
-// Show / hide sign up password
-const signupTogglePass = document.getElementById('signupTogglePass');
-const signupPassword = document.getElementById('signupPassword');
-if (signupTogglePass && signupPassword) {
-    signupTogglePass.addEventListener('click', () => {
-        const hidden = signupPassword.type === 'password';
-        signupPassword.type = hidden ? 'text' : 'password';
-        signupTogglePass.textContent = hidden ? 'Hide' : 'Show';
-    });
-}
-
-
-// Show / hide confirm password
-const confirmTogglePass = document.getElementById('confirmTogglePass');
-const confirmPassword = document.getElementById('confirmPassword');
-if (confirmTogglePass && confirmPassword) {
-    confirmTogglePass.addEventListener('click', () => {
-        const hidden = confirmPassword.type === 'password';
-        confirmPassword.type = hidden ? 'text' : 'password';
-        confirmTogglePass.textContent = hidden ? 'Hide' : 'Show';
-    });
-}
-
-
-// Sign up form submission
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    let valid = true;
-
-    const name = signupName.value.trim();
-    const email = signupEmail.value.trim();
+    const username = signupUsername.value.trim();
     const password = signupPassword.value;
     const confirm = confirmPassword.value;
+    const users = getUsers();
+    let valid = true;
 
-
-    // Validate name
-    if (!name) {
-        setError(signupName, signupNameError, 'Please enter your name.');
+    // Username
+    if (!username) {
+        setError(signupUsername, signupUsernameError, 'Please choose a username.');
+        valid = false;
+    } else if (!USERNAME_REGEX.test(username)) {
+        setError(signupUsername, signupUsernameError, 'Use 3–20 letters, numbers, dots, dashes or underscores.');
+        valid = false;
+    } else if (users[username.toLowerCase()]) {
+        setError(signupUsername, signupUsernameError, 'That username is already taken.');
         valid = false;
     } else {
-        clearError(signupName, signupNameError);
+        clearError(signupUsername, signupUsernameError);
     }
 
-
-    // Validate Gmail
-    if (!email) {
-        setError(signupEmail, signupEmailError, 'Please enter your Gmail address.');
-        valid = false;
-    } else if (!GMAIL_REGEX.test(email)) {
-        setError(
-            signupEmail,
-            signupEmailError,
-            'Please enter a valid Gmail address.'
-        );
-        valid = false;
-    } else {
-        clearError(signupEmail, signupEmailError);
-    }
-
-
-    // Validate password
+    // Password
     if (password.length < 6) {
-        setError(
-            signupPassword,
-            signupPasswordError,
-            'Password must be at least 6 characters.'
-        );
+        setError(signupPassword, signupPasswordError, 'Password must be at least 6 characters.');
         valid = false;
     } else {
         clearError(signupPassword, signupPasswordError);
     }
 
-
-    // Validate confirm password
-    if (confirm !== password || !confirm) {
-        setError(
-            confirmPassword,
-            confirmPasswordError,
-            'Passwords do not match.'
-        );
+    // Re-confirm password
+    if (!confirm) {
+        setError(confirmPassword, confirmPasswordError, 'Please re-enter your password.');
+        valid = false;
+    } else if (confirm !== password) {
+        setError(confirmPassword, confirmPasswordError, 'Passwords do not match.');
         valid = false;
     } else {
         clearError(confirmPassword, confirmPasswordError);
     }
 
-
     if (!valid) return;
 
+    // Demo storage only. Never store plain-text passwords in a real app.
+    users[username.toLowerCase()] = { username, password };
+    saveUsers(users);
 
-    // Save account locally for this demo project
-    const user = {
-        name: name,
-        email: email,
-        password: password
-    };
-
-    localStorage.setItem('echobeat_user', JSON.stringify(user));
-
-
-    // Show loading state
     signupSubmitBtn.disabled = true;
     signupSubmitBtn.textContent = 'Creating account...';
 
-
     setTimeout(() => {
-        showToast('Welcome to EchoBeat, ' + name + '! 🎧');
-
+        showToast(`Welcome to EchoBeat, ${username}! 🎧`);
         signupForm.reset();
-
         signupSubmitBtn.disabled = false;
         signupSubmitBtn.textContent = 'Sign up';
-
-        // Automatically log the new user in
-        enterApp(email, 'signup');
-
-    }, 1000);
+        enterApp(username, 'signup');
+    }, 900);
 });
 
 // =====================================================================
@@ -2354,24 +2445,6 @@ if (libraryButton) {
 // 5. LIKE / UNLIKE SYSTEM
 // ---------------------------------------------------------------------
 
-const LIKED_SONGS_KEY = 'echobeat_liked_songs';
-
-function getLikedSongs() {
-
-    try {
-
-        return JSON.parse(
-            localStorage.getItem(LIKED_SONGS_KEY)
-        ) || [];
-
-    } catch {
-
-        return [];
-
-    }
-
-}
-
 function isSongLiked(title) {
 
     return getLikedSongs().includes(title);
@@ -2522,23 +2595,23 @@ document.addEventListener('click', (event) => {
 
     saveLikedSongs(likedSongs);
 
-updateHeartIcon(heart, liked);
+    updateHeartIcon(heart, liked);
 
-refreshLikeIcons();
+    refreshLikeIcons();
 
-// If currently viewing Liked Songs,
-// immediately rebuild the list.
-if (currentPlaylistKey === 'liked') {
-    openPlaylist('liked');
-}
+    // If currently viewing Liked Songs,
+    // immediately rebuild the list.
+    if (currentPlaylistKey === 'liked') {
+        openPlaylist('liked');
+    }
 
-showToast(
-    liked
-        ? `❤️ Added "${title}" to Liked Songs`
-        : `Removed "${title}" from Liked Songs`
-);
+    showToast(
+        liked
+            ? `❤️ Added "${title}" to Liked Songs`
+            : `Removed "${title}" from Liked Songs`
+    );
 
-});
+}, true);
 
 // Refresh hearts whenever a new song loads
 audioPlayer.addEventListener('loadstart', () => {
@@ -2713,7 +2786,7 @@ function openSongFullscreen() {
         inset: 0;
         z-index: 99999;
         background: ${document.documentElement.getAttribute('data-theme') === 'light' ? '#ffffff' : '#050505'};
-color: ${document.documentElement.getAttribute('data-theme') === 'light' ? '#121212' : '#ffffff'};
+        color: ${document.documentElement.getAttribute('data-theme') === 'light' ? '#121212' : '#ffffff'};
 
 
         display: flex;

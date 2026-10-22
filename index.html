@@ -31,18 +31,16 @@
         <p>Loading EchoBeat...</p>
     </div>
 
-    <!-- Login Page (everything the user sees before logging in lives inside this wrapper) -->
-    <div id="loginPage">
+    <!-- ================= LOGIN ================= -->
+    <div id="loginPage" class="auth-screen">
 
-        <header>
-            <div class="logo">
-                <img src="image/EchoBeat.png" alt="EchoBeat Logo">
-                <span>EchoBeat</span>
-            </div>
-        </header>
+        <div class="auth-logo">
+            <img src="image/EchoBeat.png" alt="EchoBeat Logo">
+            <span>EchoBeat</span>
+        </div>
 
-        <main>
-            <div class="card">
+        <div class="auth-body">
+            <div class="auth-card">
 
                 <h1>Log in to EchoBeat</h1>
 
@@ -62,20 +60,11 @@
 
                     <button type="button" class="social-btn" data-provider="Apple">
                         <span class="social-icon" aria-hidden="true">
-                            <svg viewBox="0 0 384 512" width="18" height="18" fill="#ffffff">
+                            <svg viewBox="0 0 384 512" width="18" height="18" fill="currentColor">
                                 <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 0 184.5 0 273.6c0 26.4 4.8 53.7 14.5 81.9 12.9 37.4 59.5 129 108.1 127.5 25.4-.6 43.3-18 76.4-18 32.1 0 48.7 18 76.4 18 49 .7 91.1-83 103.9-120.5-66-31.2-60.6-91.5-60.6-93.8zM255.8 88.8c25.9-30.8 23.6-58.9 22.9-69-23 1.3-49.6 15.7-64.9 33.4-16.9 18.9-26.8 42.4-24.7 68.9 25 1.9 47.9-12.6 66.7-33.3z"/>
                             </svg>
                         </span>
                         Continue with Apple
-                    </button>
-
-                    <button type="button" class="social-btn" data-provider="Facebook">
-                        <span class="social-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="#1877F2">
-                                <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/>
-                            </svg>
-                        </span>
-                        Continue with Facebook
                     </button>
 
                 </div>
@@ -85,20 +74,19 @@
                 <form id="loginForm" novalidate>
 
                     <div class="field">
-                        <label for="username">Gmail address</label>
+                        <label for="username">Username</label>
 
                         <input
-                            type="email"
+                            type="text"
                             id="username"
                             name="username"
-                            autocomplete="email"
-                            placeholder="yourname@gmail.com"
-                            inputmode="email"
+                            autocomplete="username"
+                            placeholder="Username"
                         >
 
                         <div class="error-msg" id="usernameError">
-                            <img src="image/error.png" alt="Error">
-                            <span>Please enter your Gmail address.</span>
+                            
+                            <span>Please enter your username.</span>
                         </div>
                     </div>
 
@@ -114,13 +102,11 @@
                                 placeholder="Password"
                             >
 
-                            <button type="button" class="toggle-pass" id="togglePass">
-                                Show
-                            </button>
+                            <button type="button" class="toggle-pass" data-target="password">Show</button>
                         </div>
 
                         <div class="error-msg" id="passwordError">
-                            <img src="image/error.png" alt="Error">
+                            
                             <span>Please enter your password.</span>
                         </div>
                     </div>
@@ -130,124 +116,221 @@
                         <label for="remember">Remember me</label>
                     </div>
 
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                        Log in
-                    </button>
+                    <button type="submit" class="submit-btn" id="submitBtn">Log in</button>
 
-                    <a href="#" class="forgot-link" id="forgotLink">
-                        Forgot your password?
-                    </a>
+                    <a href="#" class="forgot-link" id="forgotLink">Forgot your password?</a>
 
                 </form>
 
             </div>
-        </main>
+        </div>
 
-        <footer>
+        <div class="auth-footer">
             <p>
                 Don't have an account?
                 <a href="#" id="signupLink">Sign up for EchoBeat</a>
             </p>
-        </footer>
-
-        <div class="toast" id="toast">
-            Logged in successfully
         </div>
 
     </div>
     <!-- /#loginPage -->
-<!-- ================= SIGN UP PAGE ================= -->
-<div id="signupPage" class="signup-page" style="display: none;">
 
-    <!-- EchoBeat Logo -->
-    <div class="signup-logo">
-        <img src="image/EchoBeat.png" alt="EchoBeat Logo">
-    </div>
 
-    <!-- Sign Up Container -->
-    <div class="signup-container">
+    <!-- ================= GOOGLE / APPLE LOGIN ================= -->
+    <div id="providerPage" class="auth-screen" style="display:none;">
 
-        <h1>Sign up to<br>start listening</h1>
+        <div class="auth-logo">
+            <img src="image/EchoBeat.png" alt="EchoBeat Logo">
+            <span>EchoBeat</span>
+        </div>
 
-        <!-- Email Form -->
-        <form id="signupForm" novalidate>
+        <div class="auth-body">
+            <div class="auth-card auth-card-narrow">
 
-            <div class="field">
-                <label for="signupEmail">Email address</label>
+                <div class="provider-icon" id="providerIcon"></div>
 
-                <input
-                    type="email"
-                    id="signupEmail"
-                    placeholder="name@domain.com"
-                    autocomplete="email"
-                >
+                <h1 id="providerTitle">Continue with Google</h1>
+                <p class="auth-sub">Enter your details to log in.</p>
 
-                <div class="error-msg" id="signupEmailError">
-                    <img src="image/error.png" alt="Error">
-                    <span>Please enter a valid email address.</span>
-                </div>
+                <form id="providerForm" novalidate>
+
+                    <div class="field">
+                        <label for="providerId" id="providerIdLabel">Gmail address</label>
+                        <input
+                            type="email"
+                            id="providerId"
+                            autocomplete="email"
+                            placeholder="yourname@gmail.com"
+                        >
+                        <div class="error-msg" id="providerIdError">
+                            
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="providerPassword">Password</label>
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                id="providerPassword"
+                                autocomplete="current-password"
+                                placeholder="Password"
+                            >
+                            <button type="button" class="toggle-pass" data-target="providerPassword">Show</button>
+                        </div>
+                        <div class="error-msg" id="providerPasswordError">
+                            
+                            
+                            <span>Please enter your password.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="providerSubmitBtn">Log in</button>
+
+                    <a href="#" class="forgot-link" id="providerBackLink">Back to login</a>
+
+                </form>
+
             </div>
-
-            <button type="submit" class="signup-next-btn" id="signupSubmitBtn">
-                Next
-            </button>
-
-        </form>
-
-
-        <!-- OR Divider -->
-        <div class="signup-or">
-            <span></span>
-            <p>or</p>
-            <span></span>
-        </div>
-
-
-        <!-- Social Sign Up Buttons -->
-        <div class="signup-social-buttons">
-
-            <!-- Phone -->
-            <button type="button" class="signup-option-btn" id="phoneSignupBtn">
-                <span class="signup-option-icon">📱</span>
-                <span>Sign up with phone number</span>
-            </button>
-
-            <!-- Google -->
-            <button type="button" class="signup-option-btn signup-social-btn"
-                    data-provider="Google">
-                <span class="social-icon">
-                    <!-- Use the same Google SVG as your login page -->
-                    <svg viewBox="0 0 48 48" width="22" height="22">
-                        <path fill="#EA4335"
-                            d="M24 9.5c3.54 0 6.72 1.22 9.22 3.22l6.85-6.85C35.91 2.05 30.31 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                        <path fill="#4285F4"
-                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.02l7.73 6c4.51-4.18 7.09-10.36 7.09-17.49z"/>
-                        <path fill="#FBBC05"
-                            d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.61.27-3.16.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.9.94 7.6 2.56 10.78l7.97-6.19z"/>
-                        <path fill="#34A853"
-                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    </svg>
-                </span>
-                <span>Sign up with Google</span>
-            </button>
-
-            <!-- Apple -->
-            <button type="button" class="signup-option-btn signup-social-btn"
-                    data-provider="Apple">
-                <span class="social-icon">
-                    <svg viewBox="0 0 384 512" width="20" height="20" fill="currentColor">
-                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 0 184.5 0 273.6c0 26.4 4.8 53.7 14.5 81.9 12.9 37.4 59.5 129 108.1 127.5 25.4-.6 43.3-18 76.4-18 32.1 0 48.7 18 76.4 18 49 .7 91.1-83 103.9-120.5-66-31.2-60.6-91.5-60.6-93.8zM255.8 88.8c25.9-30.8 23.6-58.9 22.9-69-23 1.3-49.6 15.7-64.9 33.4-16.9 18.9-26.8 42.4-24.7 68.9-25-1.9-47.9 12.6-66.7 33.3z"/>
-                    </svg>
-                </span>
-                <span>Sign up with Apple</span>
-            </button>
-
         </div>
 
     </div>
+    <!-- /#providerPage -->
 
-</div>
-<!-- ================= END SIGN UP PAGE ================= -->
+
+    <!-- ================= FORGOT PASSWORD (PHONE NUMBER) ================= -->
+    <div id="phoneLoginScreen" class="auth-screen" style="display:none;">
+
+        <div class="auth-logo">
+            <img src="image/EchoBeat.png" alt="EchoBeat Logo">
+            <span>EchoBeat</span>
+        </div>
+
+        <div class="auth-body">
+            <div class="auth-card auth-card-narrow">
+
+                <h1>Reset your password</h1>
+                <p class="auth-sub">Enter your 10-digit mobile number and we'll send you a verification link.</p>
+
+                <form id="phoneForm" novalidate>
+
+                    <div class="field">
+                        <label for="phoneNumber">Phone number</label>
+                        <input
+                            type="tel"
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            inputmode="numeric"
+                            maxlength="10"
+                            autocomplete="tel"
+                            placeholder="10-digit mobile number"
+                        >
+                        <div class="error-msg" id="phoneError">
+                            
+                            <span>Enter a valid 10-digit phone number.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="phoneSubmitBtn">Send verification link</button>
+
+                    <p class="phone-status" id="phoneStatus"></p>
+
+                    <a href="#" class="forgot-link" id="backToLoginLink">Back to login</a>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+    <!-- /#phoneLoginScreen -->
+
+
+    <!-- ================= SIGN UP ================= -->
+    <div id="signupPage" class="auth-screen" style="display:none;">
+
+        <div class="auth-logo">
+            <img src="image/EchoBeat.png" alt="EchoBeat Logo">
+            <span>EchoBeat</span>
+        </div>
+
+        <div class="auth-body">
+            <div class="auth-card auth-card-narrow">
+
+                <h1>Sign up to start listening</h1>
+
+                <form id="signupForm" novalidate>
+
+                    <div class="field">
+                        <label for="signupUsername">Username</label>
+                        <input
+                            type="text"
+                            id="signupUsername"
+                            autocomplete="username"
+                            placeholder="Choose a username"
+                            maxlength="20"
+                        >
+                        <div class="error-msg" id="signupUsernameError">
+                            
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="signupPassword">Password</label>
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                id="signupPassword"
+                                autocomplete="new-password"
+                                placeholder="Create a password"
+                            >
+                            <button type="button" class="toggle-pass" data-target="signupPassword">Show</button>
+                        </div>
+                        <div class="error-msg" id="signupPasswordError">
+                            <
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="confirmPassword">Re-confirm password</label>
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                autocomplete="new-password"
+                                placeholder="Re-enter your password"
+                            >
+                            <button type="button" class="toggle-pass" data-target="confirmPassword">Show</button>
+                        </div>
+                        <div class="error-msg" id="confirmPasswordError">
+                            
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="signupSubmitBtn">Sign up</button>
+
+                </form>
+
+                <p class="auth-switch">
+                    Already have an account?
+                    <a href="#" id="loginLink">Log in here</a>
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+    <!-- /#signupPage -->
+
+
+    <!-- Toast (outside every screen so it shows everywhere) -->
+    <div class="toast" id="toast"></div>
+
+
     <!-- Main App (hidden until login succeeds) -->
     <div class="app" id="mainApp">
 
@@ -568,194 +651,194 @@
 
                         <div class="profile-page">
 
-    <!-- Profile header -->
-    <div class="profile-header">
-        <div class="profile-avatar-lg" id="profileAvatarLg">E</div>
+                            <!-- Profile header -->
+                            <div class="profile-header">
+                                <div class="profile-avatar-lg" id="profileAvatarLg">E</div>
 
-        <div class="profile-info">
-            <p class="profile-label">Profile</p>
-            <h1 id="profileEmail">you@gmail.com</h1>
-            <p class="profile-sub">EchoBeat Free Plan</p>
-        </div>
-    </div>
-
-
-    <!-- Top Artists -->
-    <section class="profile-section">
-        <div class="profile-section-header">
-            <div style="color: white;">
-                <h2>Top artists this month</h2>
-                <p>Only visible to you</p>
-            </div>
-            <button class="show-all-btn">Show all</button>
-        </div>
-
-        <div class="top-artists-grid">
-
-            <div class="top-artist">
-                <img src="image/Arjit singh.jpeg" alt="Arijit Singh">
-                <h3>Arijit Singh</h3>
-                <p>Artist</p>
-            </div>
-
-            <div class="top-artist">
-                <img src="image/Diljit.jpeg" alt="Diljit Dosanjh">
-                <h3>Diljit Dosanjh</h3>
-                <p>Artist</p>
-            </div>
-
-            <div class="top-artist">
-                <img src="image/Shreya.jpeg" alt="Shreya Ghoshal">
-                <h3>Shreya Ghoshal</h3>
-                <p>Artist</p>
-            </div>
-
-            <div class="top-artist">
-                <img src="image/Atif.jpeg" alt="Atif Aslam">
-                <h3>Atif Aslam</h3>
-                <p>Artist</p>
-            </div>
-
-            <div class="top-artist">
-                <img src="image/Karan Aujla.jpeg" alt="Karan Aujla">
-                <h3>Karan Aujla</h3>
-                <p>Artist</p>
-            </div>
-
-        </div>
-    </section>
+                                <div class="profile-info">
+                                    <p class="profile-label">Profile</p>
+                                    <h1 id="profileEmail">you@gmail.com</h1>
+                                    <p class="profile-sub">EchoBeat Free Plan</p>
+                                </div>
+                            </div>
 
 
-    <!-- Top Tracks -->
-    <section class="profile-section">
-        <div class="profile-section-header">
-            <div style="color: white;">
-                <h2>Top tracks this month</h2>
-                <p>Only visible to you</p>
-            </div>
-            <button class="show-all-btn">Show all</button>
-        </div>
+                            <!-- Top Artists -->
+                            <section class="profile-section">
+                                <div class="profile-section-header">
+                                    <div style="color: white;">
+                                        <h2>Top artists this month</h2>
+                                        <p>Only visible to you</p>
+                                    </div>
+                                    <button class="show-all-btn">Show all</button>
+                                </div>
 
-        <div class="top-tracks">
+                                <div class="top-artists-grid">
 
-            <div class="top-track">
-                <span class="track-number">1</span>
-                <img src="image/songs/Iktara.jpg" alt="Iktara">
-                <div class="top-track-info">
-                    <h3>Iktara</h3>
-                    <p>Kavita Seth</p>
-                </div>
-                <span class="track-album">Iktara</span>
-            </div>
+                                    <div class="top-artist">
+                                        <img src="image/Arjit singh.jpeg" alt="Arijit Singh">
+                                        <h3>Arijit Singh</h3>
+                                        <p>Artist</p>
+                                    </div>
 
-            <div class="top-track">
-                <span class="track-number">2</span>
-                <img src="image/songs/Husn.jpg" alt="Husn">
-                <div class="top-track-info">
-                    <h3>Husn</h3>
-                    <p>Anuv Jain</p>
-                </div>
-                <span class="track-album">Husn</span>
-            </div>
+                                    <div class="top-artist">
+                                        <img src="image/Diljit.jpeg" alt="Diljit Dosanjh">
+                                        <h3>Diljit Dosanjh</h3>
+                                        <p>Artist</p>
+                                    </div>
 
-            <div class="top-track">
-                <span class="track-number">3</span>
-                <img src="image/songs/Kasoor.jpg" alt="Kasoor">
-                <div class="top-track-info">
-                    <h3>Kasoor</h3>
-                    <p>Prateek Kuhad</p>
-                </div>
-                <span class="track-album">Kasoor</span>
-            </div>
+                                    <div class="top-artist">
+                                        <img src="image/Shreya.jpeg" alt="Shreya Ghoshal">
+                                        <h3>Shreya Ghoshal</h3>
+                                        <p>Artist</p>
+                                    </div>
 
-            <div class="top-track">
-                <span class="track-number">4</span>
-                <img src="image/songs/Golden Hour.jpg" alt="Golden Hour">
-                <div class="top-track-info">
-                    <h3>Golden Hour</h3>
-                    <p>JVKE</p>
-                </div>
-                <span class="track-album">Golden Hour</span>
-            </div>
+                                    <div class="top-artist">
+                                        <img src="image/Atif.jpeg" alt="Atif Aslam">
+                                        <h3>Atif Aslam</h3>
+                                        <p>Artist</p>
+                                    </div>
 
-            <div class="top-track">
-                <span class="track-number">5</span>
-                <img src="image/songs/Daylight.jpg" alt="Daylight">
-                <div class="top-track-info">
-                    <h3>Daylight</h3>
-                    <p>David Kushner</p>
-                </div>
-                <span class="track-album">Daylight</span>
-            </div>
+                                    <div class="top-artist">
+                                        <img src="image/Karan Aujla.jpeg" alt="Karan Aujla">
+                                        <h3>Karan Aujla</h3>
+                                        <p>Artist</p>
+                                    </div>
 
-        </div>
-    </section>
+                                </div>
+                            </section>
 
 
-    <!-- EchoBeat Footer -->
-    <footer class="app-footer">
+                            <!-- Top Tracks -->
+                            <section class="profile-section">
+                                <div class="profile-section-header">
+                                    <div style="color: white;">
+                                        <h2>Top tracks this month</h2>
+                                        <p>Only visible to you</p>
+                                    </div>
+                                    <button class="show-all-btn">Show all</button>
+                                </div>
 
-        <div class="footer-main">
+                                <div class="top-tracks">
 
-            <div class="footer-column">
-                <h4>Company</h4>
-                <a href="#">About</a>
-                <a href="#">Jobs</a>
-                <a href="#">For the Record</a>
-            </div>
+                                    <div class="top-track">
+                                        <span class="track-number">1</span>
+                                        <img src="image/songs/Iktara.jpg" alt="Iktara">
+                                        <div class="top-track-info">
+                                            <h3>Iktara</h3>
+                                            <p>Kavita Seth</p>
+                                        </div>
+                                        <span class="track-album">Iktara</span>
+                                    </div>
 
-            <div class="footer-column">
-                <h4>Communities</h4>
-                <a href="#">For Artists</a>
-                <a href="#">Developers</a>
-                <a href="#">Advertising</a>
-                <a href="#">Investors</a>
-            </div>
+                                    <div class="top-track">
+                                        <span class="track-number">2</span>
+                                        <img src="image/songs/Husn.jpg" alt="Husn">
+                                        <div class="top-track-info">
+                                            <h3>Husn</h3>
+                                            <p>Anuv Jain</p>
+                                        </div>
+                                        <span class="track-album">Husn</span>
+                                    </div>
 
-            <div class="footer-column">
-                <h4>Useful links</h4>
-                <a href="#">Support</a>
-                <a href="#">Free Mobile App</a>
-                <a href="#">Popular by Country</a>
-                <a href="#">Import your music</a>
-            </div>
+                                    <div class="top-track">
+                                        <span class="track-number">3</span>
+                                        <img src="image/songs/Kasoor.jpg" alt="Kasoor">
+                                        <div class="top-track-info">
+                                            <h3>Kasoor</h3>
+                                            <p>Prateek Kuhad</p>
+                                        </div>
+                                        <span class="track-album">Kasoor</span>
+                                    </div>
 
-            <div class="footer-column">
-                <h4>EchoBeat Plans</h4>
-                <a href="#">Premium</a>
-                <a href="#">Student</a>
-                <a href="#">Free</a>
-            </div>
+                                    <div class="top-track">
+                                        <span class="track-number">4</span>
+                                        <img src="image/songs/Golden Hour.jpg" alt="Golden Hour">
+                                        <div class="top-track-info">
+                                            <h3>Golden Hour</h3>
+                                            <p>JVKE</p>
+                                        </div>
+                                        <span class="track-album">Golden Hour</span>
+                                    </div>
 
-            <div class="footer-socials">
-                <a href="#" aria-label="Instagram">
-                    <i class="fa-brands fa-instagram"></i>
-                </a>
-                <a href="#" aria-label="X">
-                    <i class="fa-brands fa-x-twitter"></i>
-                </a>
-                <a href="#" aria-label="Facebook">
-                    <i class="fa-brands fa-facebook-f"></i>
-                </a>
-            </div>
+                                    <div class="top-track">
+                                        <span class="track-number">5</span>
+                                        <img src="image/songs/Daylight.jpg" alt="Daylight">
+                                        <div class="top-track-info">
+                                            <h3>Daylight</h3>
+                                            <p>David Kushner</p>
+                                        </div>
+                                        <span class="track-album">Daylight</span>
+                                    </div>
 
-        </div>
+                                </div>
+                            </section>
 
-        <div class="footer-bottom">
-            <div class="footer-legal">
-                <a href="#">Legal</a>
-                <a href="#">Safety & Privacy</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Cookies</a>
-                <a href="#">Accessibility</a>
-            </div>
 
-            <p>© 2026 EchoBeat</p>
-        </div>
+                            <!-- EchoBeat Footer -->
+                            <footer class="app-footer">
 
-    </footer>
+                                <div class="footer-main">
 
-</div>
+                                    <div class="footer-column">
+                                        <h4>Company</h4>
+                                        <a href="#">About</a>
+                                        <a href="#">Jobs</a>
+                                        <a href="#">For the Record</a>
+                                    </div>
+
+                                    <div class="footer-column">
+                                        <h4>Communities</h4>
+                                        <a href="#">For Artists</a>
+                                        <a href="#">Developers</a>
+                                        <a href="#">Advertising</a>
+                                        <a href="#">Investors</a>
+                                    </div>
+
+                                    <div class="footer-column">
+                                        <h4>Useful links</h4>
+                                        <a href="#">Support</a>
+                                        <a href="#">Free Mobile App</a>
+                                        <a href="#">Popular by Country</a>
+                                        <a href="#">Import your music</a>
+                                    </div>
+
+                                    <div class="footer-column">
+                                        <h4>EchoBeat Plans</h4>
+                                        <a href="#">Premium</a>
+                                        <a href="#">Student</a>
+                                        <a href="#">Free</a>
+                                    </div>
+
+                                    <div class="footer-socials">
+                                        <a href="#" aria-label="Instagram">
+                                            <i class="fa-brands fa-instagram"></i>
+                                        </a>
+                                        <a href="#" aria-label="X">
+                                            <i class="fa-brands fa-x-twitter"></i>
+                                        </a>
+                                        <a href="#" aria-label="Facebook">
+                                            <i class="fa-brands fa-facebook-f"></i>
+                                        </a>
+                                    </div>
+
+                                </div>
+
+                                <div class="footer-bottom">
+                                    <div class="footer-legal">
+                                        <a href="#">Legal</a>
+                                        <a href="#">Safety & Privacy</a>
+                                        <a href="#">Privacy Policy</a>
+                                        <a href="#">Cookies</a>
+                                        <a href="#">Accessibility</a>
+                                    </div>
+
+                                    <p>© 2026 EchoBeat</p>
+                                </div>
+
+                            </footer>
+
+                        </div>
 
                   </div>
 
@@ -1021,7 +1104,7 @@
                             <a href="#">Open queue</a>
 
                         </div>
-                    <div id="dynamicQueue"></div>
+                        <div id="dynamicQueue"></div>
 
 
                     </div>
@@ -1052,8 +1135,8 @@
 
                     <div class="player-controls">
 
-                       <button type="button" id="shuffleBtn" aria-label="Toggle shuffle">
-                        <i class="fa-solid fa-shuffle"></i>
+                        <button type="button" id="shuffleBtn" aria-label="Toggle shuffle">
+                            <i class="fa-solid fa-shuffle"></i>
                         </button>
 
                         <i class="fa-solid fa-backward-step"></i>
@@ -1163,58 +1246,6 @@
             </button>
             <video id="videoPlayer" controls></video>
         </div>
-    </div>
-
-    <!-- Phone number login (reached via "Forgot your password?") -->
-    <div id="phoneLoginScreen" style="display:none;">
-
-        <header>
-            <div class="logo">
-                <img src="image/EchoBeat.png" alt="EchoBeat Logo">
-                <span>EchoBeat</span>
-            </div>
-        </header>
-
-        <main>
-            <div class="card">
-
-                <h1>Log in with phone</h1>
-                <p class="phone-sub">Enter your 10-digit mobile number and we'll send you a verification link.</p>
-
-                <form id="phoneForm" novalidate>
-
-                    <div class="field">
-                        <label for="phoneNumber">Phone number</label>
-                        <input
-                            type="tel"
-                            id="phoneNumber"
-                            name="phoneNumber"
-                            inputmode="numeric"
-                            maxlength="10"
-                            autocomplete="tel"
-                            placeholder="10-digit mobile number"
-                        >
-                        <div class="error-msg" id="phoneError">
-                            <img src="image/error.png" alt="Error">
-                            <span>Enter a valid 10-digit phone number.</span>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="phoneSubmitBtn">
-                        Send verification link
-                    </button>
-
-                    <p class="phone-status" id="phoneStatus"></p>
-
-                    <a href="#" class="forgot-link" id="backToLoginLink">
-                        Back to login
-                    </a>
-
-                </form>
-
-            </div>
-        </main>
-
     </div>
 
     <script src="script.js"></script>
