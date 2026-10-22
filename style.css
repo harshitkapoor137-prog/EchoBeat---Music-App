@@ -1306,7 +1306,9 @@ i{
     line-height:1.7;
 }
 
-/* ================= LOGIN PAGE ================= */
+/* =====================================================================
+   AUTH SCREENS  (login / Google-Apple login / forgot password / sign up)
+   ===================================================================== */
 
 :root{
     --green:#1ED760;
@@ -1319,7 +1321,7 @@ i{
     --danger:#f15e6c;
 }
 
-#loginPage{
+.auth-screen{
     background:var(--black);
     color:#fff;
     font-family:"Segoe UI", Helvetica, Arial, sans-serif;
@@ -1328,33 +1330,28 @@ i{
     flex-direction:column;
 }
 
-/* Top bar with logo */
-#loginPage header{
+.auth-logo{
     display:flex;
     justify-content:center;
-    padding:32px 0 16px;
-}
-
-#loginPage .logo{
-    display:flex;
     align-items:center;
     gap:10px;
+    padding:32px 0 16px;
     user-select:none;
 }
 
-#loginPage .logo img{
+.auth-logo img{
     width:40px;
     height:40px;
     object-fit:contain;
 }
 
-#loginPage .logo span{
+.auth-logo span{
     font-size:28px;
     font-weight:800;
     letter-spacing:-0.5px;
 }
 
-#loginPage main{
+.auth-body{
     flex:1;
     display:flex;
     justify-content:center;
@@ -1362,7 +1359,7 @@ i{
     padding:20px;
 }
 
-#loginPage .card{
+.auth-card{
     width:100%;
     max-width:734px;
     background:var(--panel);
@@ -1370,11 +1367,35 @@ i{
     padding:48px;
 }
 
-#loginPage h1{
+.auth-card-narrow{
+    max-width:440px;
+}
+
+.auth-card h1{
     text-align:center;
     font-size:32px;
     font-weight:700;
-    margin:0 0 32px;
+    margin:0 0 28px;
+    color:#fff;
+}
+
+.auth-sub{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:14px;
+    line-height:1.5;
+    margin:-12px 0 26px;
+}
+
+.provider-icon{
+    display:flex;
+    justify-content:center;
+    margin-bottom:16px;
+}
+
+.provider-icon svg{
+    width:40px;
+    height:40px;
 }
 
 /* Social buttons */
@@ -1428,7 +1449,7 @@ i{
     height:100%;
 }
 
-#loginPage .divider{
+.auth-screen .divider{
     display:flex;
     align-items:center;
     gap:16px;
@@ -1440,34 +1461,39 @@ i{
     background:none;
 }
 
-#loginPage .divider::before,
-#loginPage .divider::after{
+.auth-screen .divider::before,
+.auth-screen .divider::after{
     content:"";
     flex:1;
     height:1px;
     background:var(--border);
 }
 
-/* Form */
-#loginPage form{
+/* Forms */
+.auth-screen form{
     max-width:334px;
     margin:0 auto;
 }
 
-.field{
+.auth-card-narrow form{
+    max-width:100%;
+}
+
+.auth-screen .field{
     margin-bottom:16px;
 }
 
-#loginPage label{
+.auth-screen label{
     display:block;
     font-size:14px;
     font-weight:700;
     margin-bottom:8px;
 }
 
-#loginPage input[type="text"],
-#loginPage input[type="email"],
-#loginPage input[type="password"]{
+.auth-screen input[type="text"],
+.auth-screen input[type="email"],
+.auth-screen input[type="password"],
+.auth-screen input[type="tel"]{
     width:100%;
     padding:14px 16px;
     background:var(--black);
@@ -1479,12 +1505,16 @@ i{
     transition:border-color .15s ease;
 }
 
-#loginPage input:focus{
+.auth-screen input:focus{
     border-color:#fff;
 }
 
-#loginPage input.error{
+.auth-screen input.error{
     border-color:var(--danger);
+}
+
+.auth-screen input::placeholder{
+    color:var(--text-muted);
 }
 
 .error-msg{
@@ -1509,6 +1539,10 @@ i{
     position:relative;
 }
 
+.password-wrap input{
+    padding-right:64px !important;
+}
+
 .toggle-pass{
     position:absolute;
     right:14px;
@@ -1531,6 +1565,13 @@ i{
     align-items:center;
     gap:10px;
     margin:24px 0;
+}
+
+.auth-screen .remember-row label{
+    margin:0;
+    font-size:14px;
+    font-weight:400;
+    cursor:pointer;
 }
 
 .checkbox{
@@ -1561,13 +1602,6 @@ i{
     border:solid #000;
     border-width:0 2px 2px 0;
     transform:rotate(45deg);
-}
-
-.remember-row label{
-    margin:0;
-    font-size:14px;
-    font-weight:400;
-    cursor:pointer;
 }
 
 .submit-btn{
@@ -1607,27 +1641,50 @@ i{
 
 .forgot-link:hover{ color:var(--green); }
 
-#loginPage footer{
+.phone-status{
+    text-align:center;
+    font-size:13px;
+    color:#1db954;
+    min-height:18px;
+    margin-top:16px;
+}
+
+.auth-switch{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:14px;
+    margin-top:24px;
+}
+
+.auth-switch a{
+    color:#fff;
+    font-weight:700;
+    text-decoration:underline;
+}
+
+.auth-switch a:hover{ color:var(--green); }
+
+.auth-footer{
     border-top:1px solid #282828;
     padding:24px 20px 40px;
     text-align:center;
 }
 
-#loginPage footer p{
+.auth-footer p{
     margin:0;
     font-size:15px;
     color:var(--text-muted);
 }
 
-#loginPage footer a{
+.auth-footer a{
     color:#fff;
     text-decoration:underline;
     font-weight:700;
 }
 
-#loginPage footer a:hover{ color:var(--green); }
+.auth-footer a:hover{ color:var(--green); }
 
-/* success toast */
+/* Toast */
 .toast{
     position:fixed;
     bottom:24px;
@@ -1642,7 +1699,7 @@ i{
     opacity:0;
     pointer-events:none;
     transition:opacity .25s ease, transform .25s ease;
-    z-index:100;
+    z-index:20000;
 }
 
 .toast.show{
@@ -1651,8 +1708,8 @@ i{
 }
 
 @media (max-width:480px){
-    #loginPage .card{ padding:32px 20px; border-radius:0; }
-    #loginPage h1{ font-size:26px; }
+    .auth-card{ padding:32px 20px; border-radius:0; }
+    .auth-card h1{ font-size:26px; }
 }
 
 :focus-visible{
@@ -2176,132 +2233,33 @@ i{
     background:#3a3a3a;
 }
 
-/* ================= PHONE LOGIN SCREEN ================= */
-
-#phoneLoginScreen{
-    background:var(--black);
-    color:#fff;
-    font-family:"Segoe UI", Helvetica, Arial, sans-serif;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-}
-
-#phoneLoginScreen header{
-    display:flex;
-    justify-content:center;
-    padding:32px 0 16px;
-}
-
-#phoneLoginScreen .logo{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-#phoneLoginScreen .logo img{
-    width:40px;
-    height:40px;
-    object-fit:contain;
-}
-
-#phoneLoginScreen .logo span{
-    font-size:28px;
-    font-weight:800;
-    letter-spacing:-0.5px;
-}
-
-#phoneLoginScreen main{
-    flex:1;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    padding:20px;
-}
-
-#phoneLoginScreen .card{
-    width:100%;
-    max-width:420px;
-    background:var(--panel);
-    border-radius:8px;
-    padding:48px;
-}
-
-#phoneLoginScreen h1{
-    text-align:center;
-    font-size:28px;
-    font-weight:700;
-    margin:0 0 12px;
-}
-
-.phone-sub{
-    text-align:center;
-    color:var(--text-muted);
-    font-size:14px;
-    margin-bottom:28px;
-    line-height:1.5;
-}
-
-#phoneLoginScreen label{
-    display:block;
-    font-size:14px;
-    font-weight:700;
-    margin-bottom:8px;
-}
-
-#phoneLoginScreen input[type="tel"]{
-    width:100%;
-    padding:14px 16px;
-    background:var(--black);
-    border:1px solid var(--border-light);
-    border-radius:4px;
-    color:#fff;
-    font-size:16px;
-    outline:none;
-    transition:border-color .15s ease;
-}
-
-#phoneLoginScreen input:focus{
-    border-color:#fff;
-}
-
-#phoneLoginScreen input.error{
-    border-color:var(--danger);
-}
-
-.phone-status{
-    text-align:center;
-    font-size:13px;
-    color:#1db954;
-    min-height:18px;
-    margin-top:16px;
-}
-
-.phone-status.error{
-    color:var(--danger);
-}
-
 /* ================= LIGHT THEME ================= */
 
 html[data-theme="light"] body,
-html[data-theme="light"] #loginPage,
-html[data-theme="light"] #phoneLoginScreen{
+html[data-theme="light"] .auth-screen{
     background:#ffffff;
     color:#121212;
 }
 
-html[data-theme="light"] #loginPage .card,
-html[data-theme="light"] #phoneLoginScreen .card{
+html[data-theme="light"] .auth-card{
     background:#f5f5f5;
 }
 
-html[data-theme="light"] #loginPage input[type="text"],
-html[data-theme="light"] #loginPage input[type="email"],
-html[data-theme="light"] #loginPage input[type="password"],
-html[data-theme="light"] #phoneLoginScreen input[type="tel"]{
+html[data-theme="light"] .auth-card h1{
+    color:#121212;
+}
+
+html[data-theme="light"] .auth-screen input[type="text"],
+html[data-theme="light"] .auth-screen input[type="email"],
+html[data-theme="light"] .auth-screen input[type="password"],
+html[data-theme="light"] .auth-screen input[type="tel"]{
     background:#ffffff;
     color:#121212;
     border-color:#c7c7c7;
+}
+
+html[data-theme="light"] .auth-screen input:focus{
+    border-color:#121212;
 }
 
 html[data-theme="light"] .social-btn{
@@ -2742,189 +2700,38 @@ html[data-theme="light"] .nav-btn:hover {
         align-items:flex-start;
     }
 }
-/* ================= SIGN UP PAGE ================= */
 
-.signup-page {
-    min-height: 100vh;
-    background: #121212;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 70px 20px;
-    box-sizing: border-box;
+/* ================= LIKED / SAVED EMPTY STATE ================= */
+
+.liked-empty-state{
+    min-height:260px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 20px;
+    box-sizing:border-box;
+    color:#aaa;
 }
 
-.signup-logo {
-    margin-bottom: 18px;
+.liked-empty-state i{
+    font-size:48px;
+    margin-bottom:18px;
+    color:#1ed760;
 }
 
-.signup-logo img {
-    width: 42px;
-    height: 42px;
-    object-fit: contain;
+.liked-empty-state h3{
+    margin:0 0 8px;
+    color:#fff;
+    font-size:22px;
 }
 
-.signup-container {
-    width: 100%;
-    max-width: 360px;
+.liked-empty-state p{
+    margin:0;
+    color:#999;
+    font-size:14px;
 }
-
-.signup-container h1 {
-    text-align: center;
-    font-size: 46px;
-    line-height: 1.1;
-    letter-spacing: -1.5px;
-    margin: 0 0 42px;
-    font-weight: 800;
-}
-
-.signup-container .field {
-    margin-bottom: 18px;
-}
-
-.signup-container label {
-    display: block;
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
-
-.signup-container input {
-    width: 100%;
-    height: 52px;
-    box-sizing: border-box;
-    background: transparent;
-    border: 1px solid #727272;
-    border-radius: 4px;
-    color: white;
-    padding: 0 14px;
-    font-size: 16px;
-    outline: none;
-}
-
-.signup-container input:focus {
-    border: 2px solid white;
-}
-
-.signup-container input::placeholder {
-    color: #a7a7a7;
-}
-
-.signup-next-btn {
-    width: 100%;
-    height: 54px;
-    border: none;
-    border-radius: 30px;
-    background: var(--green);
-    color: #000;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 2px;
-}
-
-.signup-next-btn:hover {
-    transform: scale(1.02);
-    filter: brightness(1.08);
-}
-
-.signup-or {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: 26px 0;
-}
-
-.signup-or span {
-    flex: 1;
-    height: 1px;
-    background: #292929;
-}
-
-.signup-or p {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.signup-social-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.signup-option-btn {
-    position: relative;
-    width: 100%;
-    height: 54px;
-    border: 1px solid #727272;
-    border-radius: 30px;
-    background: transparent;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.signup-option-btn:hover {
-    border-color: white;
-    transform: scale(1.01);
-}
-
-.signup-option-icon,
-.signup-option-btn .social-icon {
-    position: absolute;
-    left: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Mobile */
-@media (max-width: 500px) {
-    .signup-page {
-        padding-top: 45px;
-    }
-
-    .signup-container h1 {
-        font-size: 38px;
-    }
-
-
-.liked-empty-state {
-    min-height: 260px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px 20px;
-    box-sizing: border-box;
-    color: #aaa;
-}
-
-.liked-empty-state i {
-    font-size: 48px;
-    margin-bottom: 18px;
-    color: #1ed760;
-}
-
-.liked-empty-state h3 {
-    margin: 0 0 8px;
-    color: #fff;
-    font-size: 22px;
-}
-
-.liked-empty-state p {
-    margin: 0;
-    color: #999;
-    font-size: 14px;
-}}
 
 @media(max-width:576px){
     .header{
@@ -3339,14 +3146,32 @@ html[data-theme="light"] .card-header a:hover {
     color: #121212;
 }
 
-/* ===== LIGHT THEME: LOGIN & FOOTER ===== */
+/* ===== LIGHT THEME: AUTH SCREENS & FOOTER ===== */
 
-html[data-theme="light"] .forgot-link {
+html[data-theme="light"] .forgot-link,
+html[data-theme="light"] .auth-switch a {
     color: #333333;
 }
 
-html[data-theme="light"] .forgot-link:hover {
+html[data-theme="light"] .forgot-link:hover,
+html[data-theme="light"] .auth-switch a:hover {
     color: #168a46;
+}
+
+html[data-theme="light"] .auth-footer {
+    border-top-color: #e0e0e0;
+}
+
+html[data-theme="light"] .auth-footer p {
+    color: #333333;
+}
+
+html[data-theme="light"] .auth-footer a {
+    color: #168a46;
+}
+
+html[data-theme="light"] .auth-footer a:hover {
+    color: #0f6b35;
 }
 
 html[data-theme="light"] .footer-column a,
@@ -3388,20 +3213,6 @@ html[data-theme="light"] .create-playlist-cancel {
 html[data-theme="light"] .create-playlist-submit {
     background: #1ed760;
     color: #000000;
-}
-
-/* ===== LIGHT THEME: LOGIN FOOTER ===== */
-
-html[data-theme="light"] #loginPage footer p {
-    color: #333333;
-}
-
-html[data-theme="light"] #loginPage footer a {
-    color: #168a46;
-}
-
-html[data-theme="light"] #loginPage footer a:hover {
-    color: #0f6b35;
 }
 
 /* Hide scrollbars but keep scrolling functional */
