@@ -3599,163 +3599,125 @@ html[data-theme="light"] .nav-icon:hover {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-/* =====================================================================
-   EchoBeat - Popular Podcasts Slider & Card Styling
-   ===================================================================== */
+/* ================= PODCAST HORIZONTAL SLIDER ================= */
 #homePodcastSlider {
-    display: flex;
-    gap: 18px;
-    overflow-x: auto;
-    padding: 12px 4px 20px 4px;
-    scroll-behavior: smooth;
-}
-
-/* Custom scrollbar for the horizontal slider */
-#homePodcastSlider::-webkit-scrollbar {
-    height: 6px;
-}
-
-#homePodcastSlider::-webkit-scrollbar-thumb {
-    background: #333333;
-    border-radius: 3px;
-}
-
-#homePodcastSlider::-webkit-scrollbar-thumb:hover {
-    background: #555555;
-}
-
-/* Dedicated Podcast Tile (overriding any generic .card styles) */
-.podcast-slider-card {
-    flex: 0 0 180px;
-    width: 180px;
-    background-color: #181818 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 14px !important;
     display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    text-align: left !important;
-    cursor: pointer;
-    position: relative;
-    box-sizing: border-box;
-    transition: background-color 0.25s ease, transform 0.2s ease;
-}
-
-.podcast-slider-card:hover {
-    background-color: #282828 !important;
-    transform: translateY(-4px);
-}
-
-/* Square Artwork */
-.podcast-slider-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    background-color: #242424;
-}
-
-/* Episode Title */
-.podcast-slider-card h3 {
-    margin: 0 0 4px 0 !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    color: #ffffff !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-}
-
-/* Show / Host Name */
-.podcast-slider-card p {
-    margin: 0 !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    color: #a7a7a7 !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-}
-/* =====================================================================
-   EchoBeat - Popular Podcasts Slider & Card Styling
-   ===================================================================== */
-#homePodcastSlider {
-    display: flex;
-    gap: 18px;
-    overflow-x: auto;
-    padding: 12px 4px 20px 4px;
+    gap: 18px !important;
+    overflow-x: auto !important;
+    padding: 10px 4px 20px 4px !important;
     scroll-behavior: smooth;
 }
 
 #homePodcastSlider::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
+}
+
+#homePodcastSlider::-webkit-scrollbar-track {
+    background: #121212;
 }
 
 #homePodcastSlider::-webkit-scrollbar-thumb {
-    background: #333333;
-    border-radius: 3px;
+    background: #2a2a2a;
+    border-radius: 4px;
 }
 
 #homePodcastSlider::-webkit-scrollbar-thumb:hover {
-    background: #555555;
+    background: #3e3e3e;
 }
 
-/* Dedicated Podcast Card (overrides login .card styles) */
+/* Individual Card */
 .podcast-slider-card {
-    flex: 0 0 180px;
-    width: 180px;
-    background-color: #181818 !important;
+    background: #181818 !important;
     border: none !important;
     border-radius: 8px !important;
     padding: 14px !important;
+    width: 175px !important;
+    min-width: 175px !important;
+    flex-shrink: 0 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     text-align: left !important;
-    cursor: pointer;
-    position: relative;
-    box-sizing: border-box;
-    transition: background-color 0.25s ease, transform 0.2s ease;
+    cursor: pointer !important;
+    position: relative !important;
+    transition: background-color 0.25s ease, transform 0.2s ease !important;
 }
 
 .podcast-slider-card:hover {
-    background-color: #282828 !important;
-    transform: translateY(-4px);
+    background: #282828 !important;
+    transform: translateY(-4px) !important;
 }
 
-.podcast-slider-card img {
+/* Image Container */
+.podcast-card-img-wrap {
     width: 100%;
     aspect-ratio: 1 / 1;
-    object-fit: cover;
     border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    background-color: #222;
     margin-bottom: 12px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    background-color: #242424;
 }
 
-.podcast-slider-card h3 {
-    margin: 0 0 4px 0 !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
+.podcast-card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Floating Green Play Button on Hover */
+.podcast-quick-play-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #1db954;
+    border: none;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s;
+    pointer-events: none;
+}
+
+.podcast-slider-card:hover .podcast-quick-play-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.podcast-quick-play-btn:hover {
+    background-color: #1ed760;
+    transform: scale(1.06);
+}
+
+/* Card Text */
+.podcast-card-details {
+    width: 100%;
+}
+
+.podcast-card-details h4 {
     color: #ffffff !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 6px 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
-.podcast-slider-card p {
-    margin: 0 !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
+.podcast-card-details p {
     color: #a7a7a7 !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
+    font-size: 0.8rem !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }

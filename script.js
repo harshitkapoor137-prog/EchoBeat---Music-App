@@ -801,7 +801,6 @@ function openPlaylist(key) {
     if (playlist.isCustom && typeof recordPlaylistInteraction === 'function') {
         recordPlaylistInteraction(key);
     }
- nb
     // ---------------------------------------------------------------
     // Liked Songs is dynamic
     // ---------------------------------------------------------------
@@ -3288,146 +3287,306 @@ if (playlistSearchInput) {
         }
     });
 }
-
-
 // =====================================================================
-// 1. Explicit Manual Definition for Podcasts Playlist
+// 🎙️ ECHOBEAT PODCASTS ENGINE (Dedicated Folders + Instant Playback)
 // =====================================================================
-PLAYLISTS['podcasts'] = {
-    title: 'Popular Podcasts',
-    cover: 'image/songs/Will AI Replace Coders.jpg',
-    isCustom: false,
-    tracks: [
-        {
-            title: 'Will AI Replace Coders',
-            artist: 'Tech Wave Podcast',
-            cover: 'image/songs/Will AI Replace Coders.jpg',
-            src: 'music/Will AI Replace Coders.mp3',
-            file: 'music/Will AI Replace Coders.mp3'
-        },
-        {
-            title: 'How to Build Habits',
-            artist: 'Mindset & Growth',
-            cover: 'image/songs/How to Build Habits.jpg',
-            src: 'music/How to Build Habits.mp3',
-            file: 'music/How to Build Habits.mp3'
-        },
-        {
-            title: 'Mystery of Room 104',
-            artist: 'Sarah Koenig True Crime',
-            cover: 'image/songs/Mystery of Room 104.jpg',
-            src: 'music/Mystery of Room 104.mp3',
-            file: 'music/Mystery of Room 104.mp3'
-        },
-        {
-            title: 'Investing for Gen Z',
-            artist: 'Financial Freedom',
-            cover: 'image/songs/Investing for Gen Z.jpg',
-            src: 'music/Investing for Gen Z.mp3',
-            file: 'music/Investing for Gen Z.mp3'
-        },
-        {
-            title: 'What Inside Black Holes',
-            artist: 'Cosmos & Beyond',
-            cover: 'image/songs/What Inside Black Holes.jpg',
-            src: 'music/What Inside Black Holes.mp3',
-            file: 'music/What Inside Black Holes.mp3'
-        },
-        {
-            title: 'Science of Deep Sleep',
-            artist: 'Neuroscience Daily',
-            cover: 'image/songs/Science of Deep Sleep.jpg',
-            src: 'music/Science of Deep Sleep.mp3',
-            file: 'music/Science of Deep Sleep.mp3'
-        },
-        {
-            title: 'How Hip Hop Took Over',
-            artist: 'Culture Beats',
-            cover: 'image/songs/How Hip Hop Took Over.jpg',
-            src: 'music/How Hip Hop Took Over.mp3',
-            file: 'music/How Hip Hop Took Over.mp3'
-        },
-        {
-            title: 'Alexandria Burning',
-            artist: 'History Unearthed',
-            cover: 'image/songs/Alexandria Burning.jpg',
-            src: 'music/Alexandria Burning.mp3',
-            file: 'music/Alexandria Burning.mp3'
-        },
-        {
-            title: 'Failing and Pivoting',
-            artist: 'Startup Stories',
-            cover: 'image/songs/Failing and Pivoting.jpg',
-            src: 'music/Failing and Pivoting.mp3',
-            file: 'music/Failing and Pivoting.mp3'
-        },
-        {
-            title: 'Stoic Creative Focus',
-            artist: 'Modern Stoicism',
-            cover: 'image/songs/Stoic Creative Focus.jpg',
-            src: 'music/Stoic Creative Focus.mp3',
-            file: 'music/Stoic Creative Focus.mp3'
+
+const ECHOBEAT_PODCASTS = [
+    {
+        title: "Will AI Replace Coders",
+        artist: "Tech Wave Podcast",
+        cover: "image/podcasts/Will AI Replace Coders.png",
+        altCover: "image/podcasts/podcast1.png",
+        src: "music/podcasts/Will AI Replace Coders.mp3",
+        host: "Alex Rivera",
+        writers: "Tech Wave Media",
+        producers: "Silicon Waves Studio"
+    },
+    {
+        title: "How to Build Habits",
+        artist: "Mindset & Growth",
+        cover: "image/podcasts/How to Build Habits.png",
+        altCover: "image/podcasts/podcast2.png",
+        src: "music/podcasts/How to Build Habits.mp3",
+        host: "Dr. Elena Vance",
+        writers: "Behavioral Lab",
+        producers: "Mindset Audio"
+    },
+    {
+        title: "Mystery of Room 104",
+        artist: "Sarah Koenig True Crime",
+        cover: "image/podcasts/Mystery of Room 104.png",
+        altCover: "image/podcasts/podcast3.png",
+        src: "music/podcasts/Mystery of Room 104.mp3",
+        host: "Sarah Koenig",
+        writers: "Investigative Unit",
+        producers: "Crime Pulse Network"
+    },
+    {
+        title: "Investing for Gen Z",
+        artist: "Financial Freedom",
+        cover: "image/podcasts/Investing for Gen Z.png",
+        altCover: "image/podcasts/podcast4.png",
+        src: "music/podcasts/Investing for Gen Z.mp3",
+        host: "Marcus Chen",
+        writers: "FinLit Collective",
+        producers: "Apex Capital Media"
+    },
+    {
+        title: "What Inside Black Holes",
+        artist: "Cosmos & Beyond",
+        cover: "image/podcasts/What Inside Black Holes.png",
+        altCover: "image/podcasts/podcast5.png",
+        src: "music/podcasts/What Inside Black Holes.mp3",
+        host: "Dr. Neil K.",
+        writers: "Astrophysics Journal",
+        producers: "CosmoSound Labs"
+    },
+    {
+        title: "Science of Deep Sleep",
+        artist: "Neuroscience Daily",
+        cover: "image/podcasts/Science of Deep Sleep.png",
+        altCover: "image/podcasts/podcast6.png",
+        src: "music/podcasts/Science of Deep Sleep.mp3",
+        host: "Maya Patel, PhD",
+        writers: "Sleep Science Inst.",
+        producers: "BioAcoustic Lab"
+    },
+    {
+        title: "How Hip Hop Took Over",
+        artist: "Culture Beats",
+        cover: "image/podcasts/How Hip Hop Took Over.png",
+        altCover: "image/podcasts/podcast7.png",
+        src: "music/podcasts/How Hip Hop Took Over.mp3",
+        host: "Derrick Vance",
+        writers: "Culture Beats Editorial",
+        producers: "Urban Sonic Media"
+    },
+    {
+        title: "Alexandria Burning",
+        artist: "History Unearthed",
+        cover: "image/podcasts/Alexandria Burning.png",
+        altCover: "image/podcasts/podcast8.png",
+        src: "music/podcasts/Alexandria Burning.mp3",
+        host: "Prof. Arthur Scott",
+        writers: "Scott Historical Review",
+        producers: "Chronos Audio"
+    },
+    {
+        title: "Failing and Pivoting",
+        artist: "Startup Stories",
+        cover: "image/podcasts/Failing and Pivoting.png",
+        altCover: "image/podcasts/podcast9.png",
+        src: "music/podcasts/Failing and Pivoting.mp3",
+        host: "Sofia Romero",
+        writers: "Venture Insights",
+        producers: "Foundercast Media"
+    },
+    {
+        title: "Stoic Creative Focus",
+        artist: "Modern Stoicism",
+        cover: "image/podcasts/Stoic Creative Focus.png",
+        altCover: "image/podcasts/podcast10.png",
+        src: "music/podcasts/Stoic Creative Focus.mp3",
+        host: "Julian Thorne",
+        writers: "Modern Stoic Guild",
+        producers: "Ataraxia Studio"
+    }
+];
+// =====================================================================
+// 🎙️ ECHOBEAT PODCASTS ENGINE (Connected to Existing Player & Sidebar)
+// =====================================================================
+
+// Helper to update the existing footer player & right sidebar
+function updatePodcastUI(podcast) {
+    if (!podcast) return;
+
+    // 1. Bottom Music Player Bar (.player-left)
+    const footerImg = document.querySelector('.player-left img');
+    const footerTitle = document.querySelector('.player-left .track-details h4');
+    const footerArtist = document.querySelector('.player-left .track-details p');
+
+    if (footerImg) footerImg.src = podcast.cover;
+    if (footerTitle) footerTitle.textContent = podcast.title;
+    if (footerArtist) footerArtist.textContent = podcast.artist;
+
+    // 2. Right Sidebar Now Playing (.now-playing-card)
+    const rightImg = document.querySelector('.now-playing-card .album-cover');
+    const rightTitle = document.querySelector('.now-playing-card .song-text h3');
+    const rightArtist = document.querySelector('.now-playing-card .song-text p');
+
+    if (rightImg) rightImg.src = podcast.cover;
+    if (rightTitle) rightTitle.textContent = podcast.title;
+    if (rightArtist) rightArtist.textContent = podcast.artist;
+
+    // 3. Right Sidebar "About the artist" section
+    const artistBanner = document.querySelector('.artist-card .artist-banner');
+    const artistTopHeader = document.querySelector('.artist-card .artist-top h3');
+    const artistDesc = document.querySelector('.artist-card .artist-description');
+    const monthlyListeners = document.querySelector('.artist-card .monthly-listeners');
+
+    if (artistBanner) artistBanner.src = podcast.cover;
+    if (artistTopHeader) artistTopHeader.textContent = podcast.host || podcast.artist;
+    if (monthlyListeners) monthlyListeners.textContent = 'Podcast Host & Creator';
+    if (artistDesc) {
+        artistDesc.textContent = `${podcast.title} — Produced by ${podcast.producers || 'EchoBeat Studios'} & written by ${podcast.writers || 'Editorial Team'}.`;
+    }
+
+    // 4. Right Sidebar Credits Card
+    const creditItems = document.querySelectorAll('.credits-card .credit-item');
+    if (creditItems.length >= 3) {
+        // First item: Host
+        const h1 = creditItems[0].querySelector('h4');
+        const p1 = creditItems[0].querySelector('p');
+        if (h1) h1.textContent = podcast.host || podcast.artist;
+        if (p1) p1.textContent = 'Host / Creator';
+
+        // Second item: Producer
+        const h2 = creditItems[1].querySelector('h4');
+        const p2 = creditItems[1].querySelector('p');
+        if (h2) h2.textContent = podcast.producers || 'Audio Production';
+        if (p2) p2.textContent = 'Production';
+
+        // Third item: Writer
+        const h3 = creditItems[2].querySelector('h4');
+        const p3 = creditItems[2].querySelector('p');
+        if (h3) h3.textContent = podcast.writers || 'Editorial';
+        if (p3) p3.textContent = 'Writer / Content';
+    }
+
+    // 5. Toggle main play button icon to pause
+    const mainPlayIcon = document.querySelector('.play-btn i');
+    if (mainPlayIcon) {
+        mainPlayIcon.classList.remove('fa-play');
+        mainPlayIcon.classList.add('fa-pause');
+    }
+
+    if (typeof showToast === 'function') {
+        showToast(`🎙️ Playing: ${podcast.title}`);
+    }
+}
+
+// Seamless podcast playback using your master audioPlayer engine
+function playPodcastAudio(podcast) {
+    if (!podcast) return;
+
+    // Standardize track object format so existing app controls can handle it
+    const trackObj = {
+        title: podcast.title,
+        artist: podcast.artist,
+        cover: podcast.cover,
+        audio: podcast.src,
+        video: null
+    };
+
+    // Use the global audioPlayer instance if defined in script.js
+    const player = (typeof audioPlayer !== 'undefined') ? audioPlayer : getEchoBeatAudio();
+
+    player.pause();
+
+    const candidateSources = [
+        podcast.src,
+        podcast.src.replace('music/podcasts/', 'music/'),
+        encodeURI(podcast.src)
+    ];
+
+    let currentSourceIdx = 0;
+
+    function tryPlaySource() {
+        if (currentSourceIdx >= candidateSources.length) {
+            console.error(`[EchoBeat] Audio file not found for "${podcast.title}".`);
+            if (typeof showToast === 'function') {
+                showToast(`⚠️ Could not find audio file for ${podcast.title}`);
+            }
+            return;
         }
-    ]
-};
 
-// =====================================================================
-// 2. Render Podcasts in Homepage Row Slider
-// =====================================================================
-function renderHomepagePodcasts() {
+        const currentPath = candidateSources[currentSourceIdx];
+        player.src = currentPath;
+        player.currentTime = 0;
+
+        const playPromise = player.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // Keep the app's global state synced
+                if (typeof isPlaying !== 'undefined') isPlaying = true;
+                if (typeof setPlayIcon === 'function') setPlayIcon(true);
+                if (typeof rememberRecentTrack === 'function') rememberRecentTrack(trackObj);
+
+                // Update UI elements in footer and right sidebar
+                updatePodcastUI(podcast);
+            }).catch((err) => {
+                console.warn(`[EchoBeat] Path failed: ${currentPath}, checking fallback...`, err);
+                currentSourceIdx++;
+                tryPlaySource();
+            });
+        }
+    }
+
+    tryPlaySource();
+}
+
+// Fallback helper to retrieve or create audio element if needed
+function getEchoBeatAudio() {
+    let audio = document.querySelector('audio');
+    if (!audio) {
+        audio = document.createElement('audio');
+        audio.id = 'echobeatAudio';
+        audio.preload = 'auto';
+        document.body.appendChild(audio);
+    }
+    return audio;
+}
+
+// Render the 10 podcast cards into #homePodcastSlider
+function renderEchoBeatPodcasts() {
     const slider = document.getElementById('homePodcastSlider');
-    const podcastPlaylist = PLAYLISTS['podcasts'];
-    if (!slider || !podcastPlaylist) return;
+    if (!slider) return;
 
     slider.innerHTML = '';
 
-    // Render individual podcast cards
-    podcastPlaylist.tracks.forEach((track, idx) => {
-        const card = document.createElement('button');
-        card.type = 'button';
+    ECHOBEAT_PODCASTS.forEach((podcast, index) => {
+        const card = document.createElement('div');
         card.className = 'podcast-slider-card';
-        card.setAttribute('aria-label', `Play ${track.title} by ${track.artist}`);
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Play ${podcast.title}`);
 
         card.innerHTML = `
-            <img src="${track.cover}" alt="${track.title} cover" loading="lazy">
-            <h3>${track.title}</h3>
-            <p>${track.artist}</p>
+            <div class="podcast-card-img-wrap">
+                <img src="${podcast.cover}" 
+                     alt="${podcast.title}" 
+                     loading="lazy" 
+                     onerror="if(this.src!=='${podcast.altCover}') { this.src='${podcast.altCover}'; } else { this.onerror=null; this.src='image/podcasts/podcast${index + 1}.jpg'; }">
+                <div class="podcast-quick-play-btn">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+            </div>
+            <div class="podcast-card-details">
+                <h4 title="${podcast.title}">${podcast.title}</h4>
+                <p>${podcast.artist}</p>
+            </div>
         `;
 
-        // Click handler: initiates playback
-        card.addEventListener('click', () => {
-            currentPlaylistKey = 'podcasts';
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            playPodcastAudio(podcast);
+        });
 
-            if (typeof playQueue === 'function') {
-                playQueue(podcastPlaylist.tracks, idx);
-            } else if (typeof playSong === 'function') {
-                playSong(track);
-            }
-
-            if (typeof showToast === 'function') {
-                showToast(`🎙️ Playing: ${track.title}`);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                playPodcastAudio(podcast);
             }
         });
 
         slider.appendChild(card);
     });
-
-    // Wire up "Show all" button to open the full playlist view
-    const showAllBtn = document.getElementById('homePodcastsShowAll');
-    if (showAllBtn) {
-        showAllBtn.onclick = (e) => {
-            e.preventDefault();
-            if (typeof openPlaylist === 'function') {
-                openPlaylist('podcasts');
-            }
-        };
-    }
 }
 
-// Ensure execution on page ready
+// Run immediately or on DOM ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderHomepagePodcasts);
+    document.addEventListener('DOMContentLoaded', renderEchoBeatPodcasts);
 } else {
-    renderHomepagePodcasts();
+    renderEchoBeatPodcasts();
 }
-
