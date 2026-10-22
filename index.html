@@ -372,21 +372,35 @@
                     </button>
                 </div>
 
-                <div class="header-center">
+               <div class="header-center">
+    <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="mainSearchInput" placeholder="What do you want to play?" autocomplete="off">
+        <button type="button" id="clearSearchBtn" class="search-clear-btn" aria-label="Clear search" hidden>
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="search-divider"></div>
+        <i class="fa-solid fa-heart"></i>
 
-                    <div class="search-bar">
+        <!-- Spotify-style Real-time Search Dropdown -->
+        <div id="searchResultsDropdown" class="search-results-dropdown" hidden>
+            <div class="search-section" id="bestMatchSection" hidden>
+                <h3>Best Match</h3>
+                <div id="bestMatchCard" class="best-match-card"></div>
+            </div>
+            <div class="search-section" id="songsMatchSection" hidden>
+                <h3>Songs</h3>
+                <div id="songsResultList" class="songs-result-list"></div>
+            </div>
+            <div id="noSearchResults" class="no-search-results" hidden>
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <p>No results found for "<span id="noResultsQuery"></span>"</p>
+                <small>Please check spelling or try another keyword.</small>
+            </div>
+        </div>
+    </div>
+</div>
 
-                        <i class="fa-solid fa-magnifying-glass"></i>
-
-                        <input type="text" placeholder="What do you want to play?">
-
-                        <div class="search-divider"></div>
-
-                        <i class="fa-solid fa-heart"></i>
-
-                    </div>
-
-                </div>
 
                 <div class="header-right">
 
@@ -547,60 +561,20 @@
                         </div>
                     </section>
 
-                    <section class="podcasts home-podcast-section">
+<!-- ================= POPULAR PODCASTS SECTION ================= -->
+<section class="podcasts home-podcast-section">
+    <div class="popular-header">
+        <h3>Popular Podcasts</h3>
+        <a href="#" id="homePodcastsShowAll">Show all</a>
+    </div>
 
-                        <div class="popular-header">
-                            <h3>Popular Podcasts</h3>
-                            <a href="#">Show All</a>
-                        </div>
+    <!-- The JS renders all 10 podcast cards dynamically inside this slider -->
+    <div class="slider" id="homePodcastSlider">
+        <!-- Rendered by JavaScript -->
+    </div>
+</section>
 
-                        <div class="podcast-grid">
 
-                            <div class="podcast-card">
-
-                                <div class="podcast-top">
-
-                                    <img src="image/podcast1.jpg" class="podcast-cover">
-
-                                    <div class="podcast-info">
-                                        <h3>The Psychology of Your 20s</h3>
-                                        <span>🎥 Video • Jemma Sbeg</span>
-                                    </div>
-
-                                </div>
-
-                                <img src="image/podcast1.jpg" class="episode-image">
-
-                                <p class="episode-desc">
-                                    Jun 23 • 39 min • Practical advice on relationships, career growth and navigating your twenties.
-                                </p>
-
-                            </div>
-
-                            <div class="podcast-card">
-
-                                <div class="podcast-top">
-
-                                    <img src="image/podcast2.jpg" class="podcast-cover">
-
-                                    <div class="podcast-info">
-                                        <h3>Anything Goes</h3>
-                                        <span>🎥 Video • Emma Chamberlain</span>
-                                    </div>
-
-                                </div>
-
-                                <img src="image/podcast2.jpg" class="episode-image">
-
-                                <p class="episode-desc">
-                                    Jul 31 • 50 min • Honest conversations about life, confidence and creativity.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </section>
 
                   </div>
                   <!-- /#homeView -->
