@@ -2794,7 +2794,7 @@ html[data-theme="light"] .nav-btn:hover {
 .station-card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:5px;display:block;margin-bottom:12px;}
 .station-type{position:absolute;top:20px;right:18px;font-size:10px;font-weight:900;letter-spacing:1.5px;color:#080808;background:#fff;padding:3px 5px;border-radius:3px;}
 .station-card h4{font-size:14px;color:#fff;margin:0 0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.station-card p{font-size:12px;color:#b3b3b3;line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.station-card p{font-size:12px;color:#b3b3b3;line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .home-music-section[hidden],.home-podcast-section[hidden]{display:none!important;}
 @media(max-width:1100px){.home-announcement{grid-template-columns:1fr 1fr;}.station-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.quick-links{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:700px){.home-announcement{grid-template-columns:1fr;}.announcement-art,.announcement-art img{min-height:190px;max-height:220px;}.announcement-copy{padding:20px;}.station-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.quick-links{grid-template-columns:1fr;}}
@@ -3241,4 +3241,483 @@ html[data-theme="light"] .nav-icon {
 html[data-theme="light"] .nav-icon:hover {
     background: #e8e8e8;
     color: #121212;
+}
+/* =====================================================================
+   Spotify-style Search Dropdown & Controls
+   ===================================================================== */
+.header-center {
+    position: relative;
+    z-index: 1000;
+}
+
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-clear-btn {
+    background: transparent;
+    border: none;
+    color: #b3b3b3;
+    font-size: 16px;
+    padding: 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.search-clear-btn:hover {
+    color: #ffffff;
+}
+
+/* Dropdown Window */
+.search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    min-width: 480px;
+    max-height: 520px;
+    background: #181818;
+    border-radius: 8px;
+    border: 1px solid #282828;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 0, 0, 0.4);
+    padding: 18px;
+    overflow-y: auto;
+    z-index: 99999;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.search-results-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+.search-results-dropdown::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+.search-section h3 {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Best Match Card (Left-side hero card) */
+.best-match-card {
+    background: #1f1f1f;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.best-match-card:hover {
+    background: #282828;
+}
+
+.best-match-card img {
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.best-match-card .best-match-info {
+    flex: 1;
+}
+
+.best-match-card .title {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.best-match-card .meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #b3b3b3;
+}
+
+.best-match-card .tag {
+    background: #121212;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.best-match-card .play-action {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1db954;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.best-match-card:hover .play-action {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Song Results List */
+.songs-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.search-track-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.search-track-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.search-track-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-track-left img {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.search-track-details h4 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.search-track-details p {
+    margin: 2px 0 0 0;
+    color: #b3b3b3;
+    font-size: 12px;
+}
+
+.search-track-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.search-track-play-icon {
+    color: #1db954;
+    font-size: 20px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.search-track-item:hover .search-track-play-icon {
+    opacity: 1;
+}
+
+/* No Results State */
+.no-search-results {
+    text-align: center;
+    padding: 30px 10px;
+    color: #b3b3b3;
+}
+
+.no-search-results i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #666;
+}
+
+.no-search-results p {
+    font-size: 16px;
+    color: #fff;
+    margin: 0 0 4px 0;
+}
+
+.no-search-results small {
+    font-size: 13px;
+    color: #888;
+}
+/* Force hidden attribute to override display: flex */
+.search-results-dropdown[hidden] {
+    display: none !important;
+}
+/* =====================================================================
+   Dynamic Podcast Grid Styles
+   ===================================================================== */
+.podcast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 16px;
+    transition: all 0.3s ease;
+}
+
+/* Initially limit the grid view unless 'Show All' is clicked */
+.podcast-grid:not(.expanded) {
+    max-height: 420px;
+    overflow: hidden;
+}
+
+.podcast-card {
+    background: #181818;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.podcast-card:hover {
+    background-color: #282828;
+    transform: translateY(-4px);
+}
+
+.podcast-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.podcast-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.podcast-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.podcast-info h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.podcast-info span {
+    font-size: 11px;
+    color: #b3b3b3;
+    display: block;
+    margin-top: 2px;
+}
+
+.podcast-play-btn {
+    position: absolute;
+    right: 0;
+    background: none;
+    border: none;
+    color: #1db954; /* Spotify green */
+    font-size: 36px;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.podcast-card:hover .podcast-play-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.podcast-play-btn:hover {
+    color: #1ed760;
+    transform: scale(1.08) !important;
+}
+
+.episode-image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #282828; /* loading placeholder skeleton background */
+}
+
+.episode-desc {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #b3b3b3;
+    margin: 0;
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.episode-desc strong {
+    color: #ffffff;
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* ================= PODCAST HORIZONTAL SLIDER ================= */
+#homePodcastSlider {
+    display: flex !important;
+    gap: 18px !important;
+    overflow-x: auto !important;
+    padding: 10px 4px 20px 4px !important;
+    scroll-behavior: smooth;
+}
+
+#homePodcastSlider::-webkit-scrollbar {
+    height: 8px;
+}
+
+#homePodcastSlider::-webkit-scrollbar-track {
+    background: #121212;
+}
+
+#homePodcastSlider::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 4px;
+}
+
+#homePodcastSlider::-webkit-scrollbar-thumb:hover {
+    background: #3e3e3e;
+}
+
+/* Individual Card */
+.podcast-slider-card {
+    background: #181818 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 14px !important;
+    width: 175px !important;
+    min-width: 175px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    position: relative !important;
+    transition: background-color 0.25s ease, transform 0.2s ease !important;
+}
+
+.podcast-slider-card:hover {
+    background: #282828 !important;
+    transform: translateY(-4px) !important;
+}
+
+/* Image Container */
+.podcast-card-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    background-color: #222;
+    margin-bottom: 12px;
+}
+
+.podcast-card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Floating Green Play Button on Hover */
+.podcast-quick-play-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #1db954;
+    border: none;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s;
+    pointer-events: none;
+}
+
+.podcast-slider-card:hover .podcast-quick-play-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.podcast-quick-play-btn:hover {
+    background-color: #1ed760;
+    transform: scale(1.06);
+}
+
+/* Card Text */
+.podcast-card-details {
+    width: 100%;
+}
+
+.podcast-card-details h4 {
+    color: #ffffff !important;
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 6px 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.podcast-card-details p {
+    color: #a7a7a7 !important;
+    font-size: 0.8rem !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
