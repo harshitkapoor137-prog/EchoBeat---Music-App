@@ -87,12 +87,20 @@ function songCoverPath(title) {
     return `image/songs/${fileName}.jpg`;
 }
 
+function podcastCoverPath(title) {
+    return `image/podcasts/${title}.jpeg`;
+}
+
+function podcastAudioPath(title) {
+    return `music/podcasts/${title}.mpeg`;
+}
+
 function trackFrom(title, artist) {
     return {
         title,
         artist,
         cover: songCoverPath(title),
-        audio: `music/${title}.mp3`,
+        audio: `music/songs/${title}.mp3`,
         video: null,
     };
 }
@@ -221,18 +229,18 @@ const PLAYLISTS = {
     // 🎙️ Our new 10 Podcasts added the exact same way as your songs!
     podcasts: {
         title: 'Popular Podcasts',
-        cover: 'image/trending.jpg', // Uses a pre-existing cover photo you already have
+        cover: 'image/podcast1.jpg', // Uses a pre-existing cover photo you already have
         tracks: [
-            trackFrom('Will AI Replace Coders', 'Tech Wave Podcast'),
-            trackFrom('How to Build Habits', 'Mindset and Growth'),
-            trackFrom('Mystery of Room 104', 'Sarah Koenig True Crime'),
-            trackFrom('Investing for Gen Z', 'Financial Freedom'),
-            trackFrom('What Inside Black Holes', 'The Space Chronicles'),
-            trackFrom('Science of Deep Sleep', 'The Wellness Lab'),
-            trackFrom('How Hip Hop Took Over', 'Behind The Beats'),
-            trackFrom('Alexandria Burning', 'History Retold'),
-            trackFrom('Failing and Pivoting', 'The Startup Blueprint'),
-            trackFrom('Stoic Creative Focus', 'Creative Flow Podcast')
+            { title: 'Will AI Replace Coders', artist: 'Tech Wave Podcast', cover: podcastCoverPath('Will AI Replace Coders'), audio: podcastAudioPath('Will AI Replace Coders'), video: null },
+            { title: 'How to Build Habits', artist: 'Mindset and Growth', cover: podcastCoverPath('How to Build Habits'), audio: podcastAudioPath('How to Build Habits'), video: null },
+            { title: 'Mystery of Room 104', artist: 'Sarah Koenig True Crime', cover: podcastCoverPath('Mystery of Room 104'), audio: podcastAudioPath('Mystery of Room 104'), video: null },
+            { title: 'Investing for Gen Z', artist: 'Financial Freedom', cover: podcastCoverPath('Investing for Gen Z'), audio: podcastAudioPath('Investing for Gen Z'), video: null },
+            { title: 'What Inside Black Holes', artist: 'The Space Chronicles', cover: podcastCoverPath('What Inside Black Holes'), audio: podcastAudioPath('What Inside Black Holes'), video: null },
+            { title: 'Science of Deep Sleep', artist: 'The Wellness Lab', cover: podcastCoverPath('Science of Deep Sleep'), audio: podcastAudioPath('Science of Deep Sleep'), video: null },
+            { title: 'How Hip Hop Took Over', artist: 'Behind The Beats', cover: podcastCoverPath('How Hip Hop Took Over'), audio: podcastAudioPath('How Hip Hop Took Over'), video: null },
+            { title: 'Alexandria Burning', artist: 'History Retold', cover: podcastCoverPath('Alexandria Burning'), audio: podcastAudioPath('Alexandria Burning'), video: null },
+            { title: 'Failing and Pivoting', artist: 'The Startup Blueprint', cover: podcastCoverPath('Failing and Pivoting'), audio: podcastAudioPath('Failing and Pivoting'), video: null },
+            { title: 'Stoic Creative Focus', artist: 'Creative Flow Podcast', cover: podcastCoverPath('Stoic Creative Focus'), audio: podcastAudioPath('Stoic Creative Focus'), video: null }
         ]
     }
 };
@@ -286,7 +294,10 @@ const SINGLE_TRACKS = {
     allthestars: trackFrom('All The Stars', 'Kendrick Lamar, SZA'),
     drive: trackFrom('Drive', 'Ed Sheeran'),
     losemymind: trackFrom('Lose My Mind', 'Don Toliver'),
-    justkeepwatching: trackFrom('Just Keep Watching', 'Tate Mcrae')
+    justkeepwatching: trackFrom('Just Keep Watching', 'Tate Mcrae'),
+    baby: trackFrom('Baby', 'Justin Beiber'),
+    beautyandabeat: trackFrom('Beauty And A Beat', 'Justin Beiber'),
+    ghost: trackFrom('Ghost', 'Justin Beiber')
 };
 
 // =====================================================================
@@ -441,7 +452,10 @@ const RECENT_STARTER_TRACKS = [
     trackFrom('Less Than Zero', 'The Weeknd'),
     trackFrom('Drive', 'Ed Sheeran'),
     trackFrom('Lose My Mind', 'Don Toliver'),
-    trackFrom('Just Keep Watching', 'Tate Mcrae')
+    trackFrom('Just Keep Watching', 'Tate Mcrae'),
+    trackFrom('Baby', 'Justin Beiber'),
+    trackFrom('Beauty And A Beat', 'Justin Beiber'),
+    trackFrom('Ghost', 'Justin Beiber')
 ];
 let showAllRecents = false;
 
@@ -449,7 +463,13 @@ function getRecentTracks() {
     try {
         const saved = JSON.parse(localStorage.getItem(RECENTS_KEY));
         if (Array.isArray(saved) && saved.length) {
-            return saved.map((item) => trackFrom(item.title, item.artist)).filter((track) => track.title && track.artist);
+            const allTracks = getAllAvailableTracks();
+            return saved.map((item) => {
+                const title = item.title;
+                const artist = item.artist;
+                const catalogTrack = allTracks.find((track) => track.title === title && track.artist === artist);
+                return catalogTrack || trackFrom(title, artist);
+            }).filter((track) => track.title && track.artist);
         }
     } catch {}
     return [...RECENT_STARTER_TRACKS];
@@ -595,6 +615,205 @@ function formatTime(seconds) {
     return `${m}:${s}`;
 }
 
+const ARTIST_SIMILARITY_GROUPS = [
+    ['The Weeknd', 'Daft Punk', 'Gesaffelstein', 'Drake', 'Post Malone'],
+    ['Justin Bieber', 'Shawn Mendes', 'Charlie Puth', 'Ed Sheeran'],
+    ['Kendrick Lamar', 'SZA', 'Drake', 'J. Cole'],
+    ['Arijit Singh', 'Atif Aslam', 'Jubin Nautiyal', 'Anuv Jain'],
+    ['Prateek Kuhad', 'Jasleen Royal', 'Anuv Jain', 'Lauv'],
+    ['Harry Styles', 'Dua Lipa', 'Miley Cyrus', 'JVKE'],
+    ['Lata Mangeshkar', 'Kumar Sanu', 'Udit Narayan', 'Sadhana Sargam'],
+    ['Frank Sinatra', 'Nina Simone', 'Dave Brubeck', 'Edith Piaf'],
+    ['Luis Fonsi', 'Daddy Yankee', 'Enrique Iglesias']
+];
+
+function getTrackArtists(track) {
+    return String(track?.artist || '')
+        .split(',')
+        .map((artist) => artist.trim())
+        .filter(Boolean);
+}
+
+function renderDynamicCredits(track) {
+    const container = document.getElementById('dynamicCredits');
+    if (!container || !track) return;
+
+    const artists = getTrackArtists(track);
+    container.innerHTML = '';
+
+    if (!artists.length) {
+        container.innerHTML = '<p class="sidebar-empty-message">Artist information is unavailable.</p>';
+        return;
+    }
+
+    artists.forEach((artist) => {
+        const item = document.createElement('div');
+        item.className = 'credit-item';
+
+        const info = document.createElement('div');
+        const name = document.createElement('h4');
+        const role = document.createElement('p');
+        const follow = document.createElement('button');
+
+        name.textContent = artist;
+        role.textContent = artists.length > 1 ? 'Performing Artist' : 'Primary Artist';
+        follow.type = 'button';
+        follow.className = 'follow-btn';
+        follow.textContent = 'Follow';
+        follow.setAttribute('aria-label', `Follow ${artist}`);
+
+        follow.addEventListener('click', () => {
+            const following = follow.dataset.following === 'true';
+            follow.dataset.following = String(!following);
+            follow.textContent = following ? 'Follow' : 'Following';
+            follow.setAttribute('aria-pressed', String(!following));
+        });
+
+        info.append(name, role);
+        item.append(info, follow);
+        container.appendChild(item);
+    });
+}
+
+function getRelatedTracks(track) {
+    const allTracks = getAllAvailableTracks();
+    const currentArtists = getTrackArtists(track);
+    const group = ARTIST_SIMILARITY_GROUPS.find((artists) =>
+        currentArtists.some((artist) => artists.some((candidate) => candidate.toLowerCase() === artist.toLowerCase()))
+    ) || currentArtists;
+
+    const currentTitle = String(track.title || '').toLowerCase();
+    const candidates = allTracks.filter((candidate) => {
+        if (!candidate || String(candidate.title || '').toLowerCase() === currentTitle) return false;
+        const candidateArtists = getTrackArtists(candidate);
+        return candidateArtists.some((artist) =>
+            group.some((similarArtist) => similarArtist.toLowerCase() === artist.toLowerCase())
+        );
+    });
+
+    const sameArtist = candidates.filter((candidate) =>
+        getTrackArtists(candidate).some((artist) =>
+            currentArtists.some((currentArtist) => currentArtist.toLowerCase() === artist.toLowerCase())
+        )
+    );
+
+    return [...sameArtist, ...candidates.filter((candidate) => !sameArtist.includes(candidate))]
+        .filter((candidate, index, list) =>
+            list.findIndex((item) => item.title === candidate.title && item.artist === candidate.artist) === index
+        )
+        .slice(0, 4);
+}
+
+function buildRecommendedQueue(track, limit = 5) {
+    if (!track) return [];
+
+    const allTracks = getAllAvailableTracks();
+    const related = getRelatedTracks(track);
+    const seen = new Set([String(track.title || '').toLowerCase()]);
+    const recommendations = [];
+
+    const addCandidate = (candidate) => {
+        if (!candidate || !candidate.title) return;
+        const key = String(candidate.title).toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        recommendations.push(candidate);
+    };
+
+    related.forEach(addCandidate);
+
+    // If no related-artist tracks exist in the catalogue, use the user's
+    // preferred fallback songs instead of unrelated default recommendations.
+    if (related.length === 0) {
+        const fallbackSongs = [
+            { title: 'Ghungroo', artist: 'Arijit Singh, Shilpa Rao' },
+            { title: 'Lose My Mind', artist: 'Don Toliver' },
+            { title: 'Naina', artist: 'Diljit Dosanjh, Badshah' },
+            { title: 'Blinding Lights', artist: 'The Weeknd' },
+        ];
+
+        fallbackSongs.forEach((fallback) => {
+            const existingTrack = allTracks.find((candidate) =>
+                String(candidate.title || '').trim().toLowerCase() === fallback.title.toLowerCase()
+            );
+            addCandidate(existingTrack || trackFrom(fallback.title, fallback.artist));
+        });
+    } else {
+        // Related tracks exist; fill any remaining slots with other available
+        // catalogue tracks, prioritizing the same artist and similarity groups.
+        const currentArtists = getTrackArtists(track).map((artist) => artist.toLowerCase());
+        const remaining = allTracks.filter((candidate) => !seen.has(String(candidate.title || '').toLowerCase()));
+        remaining.sort((a, b) => {
+            const score = (candidate) => getTrackArtists(candidate).reduce((total, artist) => {
+                const normalized = artist.toLowerCase();
+                if (currentArtists.includes(normalized)) return total + 3;
+                const group = ARTIST_SIMILARITY_GROUPS.find((artists) =>
+                    currentArtists.some((currentArtist) => artists.some((name) => name.toLowerCase() === currentArtist))
+                );
+                return total + (group && group.some((name) => name.toLowerCase() === normalized) ? 1 : 0);
+            }, 0);
+            return score(b) - score(a);
+        });
+        remaining.forEach(addCandidate);
+    }
+
+    return recommendations.slice(0, limit);
+}
+
+function renderRelatedMusicVideos(track) {
+    const container = document.getElementById('dynamicRelatedVideos');
+    if (!container || !track) return;
+
+    container.innerHTML = '';
+    const relatedTracks = getRelatedTracks(track);
+
+    if (!relatedTracks.length) {
+        const empty = document.createElement('p');
+        empty.className = 'sidebar-empty-message';
+        empty.textContent = 'More related songs will appear as your music library grows.';
+        container.appendChild(empty);
+        return;
+    }
+
+    relatedTracks.forEach((relatedTrack) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'video-item';
+        item.title = `Play ${relatedTrack.title} by ${relatedTrack.artist}`;
+
+        const image = document.createElement('img');
+        image.src = relatedTrack.cover || songCoverPath(relatedTrack.title);
+        image.alt = `${relatedTrack.title} cover`;
+        image.loading = 'lazy';
+        image.onerror = () => {
+            image.onerror = null;
+            image.src = 'image/EchoBeat.png';
+        };
+
+        const title = document.createElement('p');
+        title.textContent = relatedTrack.title;
+
+        const artist = document.createElement('small');
+        artist.textContent = relatedTrack.artist;
+
+        item.append(image, title, artist);
+        item.addEventListener('click', () => {
+            const tracks = getAllAvailableTracks();
+            const index = tracks.findIndex((candidate) =>
+                candidate.title === relatedTrack.title && candidate.artist === relatedTrack.artist
+            );
+            playQueue(index >= 0 ? tracks : [relatedTrack], index >= 0 ? index : 0);
+        });
+
+        container.appendChild(item);
+    });
+}
+
+function updateMusicSidebar(track) {
+    renderDynamicCredits(track);
+    renderRelatedMusicVideos(track);
+}
+
 function renderNowPlaying(track) {
     if (!track) return;
     if (playerLeftImg) playerLeftImg.src = track.cover;
@@ -603,6 +822,8 @@ function renderNowPlaying(track) {
     if (nowPlayingImg) nowPlayingImg.src = track.cover;
     if (nowPlayingTitle) nowPlayingTitle.textContent = track.title;
     if (nowPlayingArtist) nowPlayingArtist.textContent = track.artist;
+
+    updateMusicSidebar(track);
 
     document.querySelectorAll('.track-row').forEach((row, idx) => {
         row.classList.toggle('playing', idx === currentIndex);
@@ -637,8 +858,18 @@ function loadTrack(index, autoplay) {
 }
 
 function playQueue(queue, startIndex) {
-    currentQueue = queue;
-    loadTrack(startIndex || 0, true);
+    const requestedQueue = Array.isArray(queue) ? [...queue] : [];
+    const selectedIndex = Math.max(0, Number(startIndex) || 0);
+    const selectedTrack = requestedQueue[selectedIndex];
+
+    if (selectedTrack && currentPlaylistKey === null && requestedQueue.length === 1) {
+        currentQueue = [selectedTrack, ...buildRecommendedQueue(selectedTrack, 5)];
+        loadTrack(0, true);
+        return;
+    }
+
+    currentQueue = requestedQueue;
+    loadTrack(selectedIndex, true);
 }
 
 // Plays a single, non-playlist track (Thinking Out Loud / Notion).
@@ -1073,8 +1304,6 @@ function renderUserPlaylists() {
         coverImage.alt = '';
         setPlaylistCoverWithFallback(coverImage, playlist.cover);
         image.appendChild(coverImage);
-        image.addEventListener('click', () => openPlaylist(key));
-        image.innerHTML = `<img src="${escapeHTML(playlist.cover)}" alt="">`;
         image.addEventListener('click', () => {
             recordPlaylistInteraction(key); // Move to top on click!
             openPlaylist(key);
@@ -2274,7 +2503,7 @@ const ARTIST_RADIO_STATIONS = {
 Object.entries({ ...POPULAR_RADIO_STATIONS, ...ARTIST_RADIO_STATIONS }).forEach(([key, station]) => {
     PLAYLISTS[key] = {
         title: station.name,
-        cover: station.cover || ({ 'the-weeknd': 'image/the weeknd.jpg', 'english-pop': 'image/Happy vibes.jpg', 'hindi-party': 'image/Arjit singh.jpeg', 'punjabi-party': 'image/Karan Aujla.jpeg', grwm: 'image/grwm.jpg' }[key] || 'image/Starboy.jpg'),
+        cover: station.cover || ({ 'the-weeknd': 'image/The weeknd.jpg', 'english-pop': 'image/Happy vibes.jpg', 'hindi-party': 'image/Arjit singh.jpeg', 'punjabi-party': 'image/Karan Aujla.jpeg', grwm: 'image/grwm.jpg' }[key] || 'image/Starboy.jpg'),
         tracks: tracksFromList(station.songs),
         isRadioStation: true
     };
@@ -2478,8 +2707,8 @@ function handleLiveSearch() {
 
         item.addEventListener('click', () => {
             currentPlaylistKey = null;
-            // Play queue of filtered matches starting with this song
-            playQueue(matches, matches.indexOf(track));
+            // Start with the selected search result, then queue five related songs.
+            playQueue([track], 0);
             showToast(`Playing ${track.title}`);
             closeSearchDropdown();
         });
@@ -3293,9 +3522,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Will AI Replace Coders",
         artist: "Tech Wave Podcast",
-        cover: "image/podcasts/Will AI Replace Coders.png",
-        altCover: "image/podcasts/podcast1.png",
-        src: "music/podcasts/Will AI Replace Coders.mp3",
+        cover: "image/podcasts/Will AI Replace Coders.jpeg",
+        altCover: "image/podcasts/Will AI Replace Coders.jpeg",
+        src: "music/podcasts/Will AI Replace Coders.mpeg",
         host: "Alex Rivera",
         writers: "Tech Wave Media",
         producers: "Silicon Waves Studio"
@@ -3303,9 +3532,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "How to Build Habits",
         artist: "Mindset & Growth",
-        cover: "image/podcasts/How to Build Habits.png",
-        altCover: "image/podcasts/podcast2.png",
-        src: "music/podcasts/How to Build Habits.mp3",
+        cover: "image/podcasts/How to Build Habits.jpeg",
+        altCover: "image/podcasts/How to Build Habits.jpeg",
+        src: "music/podcasts/How to Build Habits.mpeg",
         host: "Dr. Elena Vance",
         writers: "Behavioral Lab",
         producers: "Mindset Audio"
@@ -3313,9 +3542,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Mystery of Room 104",
         artist: "Sarah Koenig True Crime",
-        cover: "image/podcasts/Mystery of Room 104.png",
-        altCover: "image/podcasts/podcast3.png",
-        src: "music/podcasts/Mystery of Room 104.mp3",
+        cover: "image/podcasts/Mystery of Room 104.jpeg",
+        altCover: "image/podcasts/Mystery of Room 104.jpeg",
+        src: "music/podcasts/Mystery of Room 104.mpeg",
         host: "Sarah Koenig",
         writers: "Investigative Unit",
         producers: "Crime Pulse Network"
@@ -3323,9 +3552,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Investing for Gen Z",
         artist: "Financial Freedom",
-        cover: "image/podcasts/Investing for Gen Z.png",
-        altCover: "image/podcasts/podcast4.png",
-        src: "music/podcasts/Investing for Gen Z.mp3",
+        cover: "image/podcasts/Investing for Gen Z.jpeg",
+        altCover: "image/podcasts/Investing for Gen Z.jpeg",
+        src: "music/podcasts/Investing for Gen Z.mpeg",
         host: "Marcus Chen",
         writers: "FinLit Collective",
         producers: "Apex Capital Media"
@@ -3333,9 +3562,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "What Inside Black Holes",
         artist: "Cosmos & Beyond",
-        cover: "image/podcasts/What Inside Black Holes.png",
-        altCover: "image/podcasts/podcast5.png",
-        src: "music/podcasts/What Inside Black Holes.mp3",
+        cover: "image/podcasts/What Inside Black Holes.jpeg",
+        altCover: "image/podcasts/What Inside Black Holes.jpeg",
+        src: "music/podcasts/What Inside Black Holes.mpeg",
         host: "Dr. Neil K.",
         writers: "Astrophysics Journal",
         producers: "CosmoSound Labs"
@@ -3343,9 +3572,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Science of Deep Sleep",
         artist: "Neuroscience Daily",
-        cover: "image/podcasts/Science of Deep Sleep.png",
-        altCover: "image/podcasts/podcast6.png",
-        src: "music/podcasts/Science of Deep Sleep.mp3",
+        cover: "image/podcasts/Science of Deep Sleep.jpeg",
+        altCover: "image/podcasts/Science of Deep Sleep.jpeg",
+        src: "music/podcasts/Science of Deep Sleep.mpeg",
         host: "Maya Patel, PhD",
         writers: "Sleep Science Inst.",
         producers: "BioAcoustic Lab"
@@ -3353,9 +3582,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "How Hip Hop Took Over",
         artist: "Culture Beats",
-        cover: "image/podcasts/How Hip Hop Took Over.png",
-        altCover: "image/podcasts/podcast7.png",
-        src: "music/podcasts/How Hip Hop Took Over.mp3",
+        cover: "image/podcasts/How Hip Hop Took Over.jpeg",
+        altCover: "image/podcasts/How Hip Hop Took Over.jpeg",
+        src: "music/podcasts/How Hip Hop Took Over.mpeg",
         host: "Derrick Vance",
         writers: "Culture Beats Editorial",
         producers: "Urban Sonic Media"
@@ -3363,9 +3592,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Alexandria Burning",
         artist: "History Unearthed",
-        cover: "image/podcasts/Alexandria Burning.png",
-        altCover: "image/podcasts/podcast8.png",
-        src: "music/podcasts/Alexandria Burning.mp3",
+        cover: "image/podcasts/Alexandria Burning.jpeg",
+        altCover: "image/podcasts/Alexandria Burning.jpeg",
+        src: "music/podcasts/Alexandria Burning.mpeg",
         host: "Prof. Arthur Scott",
         writers: "Scott Historical Review",
         producers: "Chronos Audio"
@@ -3373,9 +3602,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Failing and Pivoting",
         artist: "Startup Stories",
-        cover: "image/podcasts/Failing and Pivoting.png",
-        altCover: "image/podcasts/podcast9.png",
-        src: "music/podcasts/Failing and Pivoting.mp3",
+        cover: "image/podcasts/Failing and Pivoting.jpeg",
+        altCover: "image/podcasts/Failing and Pivoting.jpeg",
+        src: "music/podcasts/Failing and Pivoting.mpeg",
         host: "Sofia Romero",
         writers: "Venture Insights",
         producers: "Foundercast Media"
@@ -3383,9 +3612,9 @@ const ECHOBEAT_PODCASTS = [
     {
         title: "Stoic Creative Focus",
         artist: "Modern Stoicism",
-        cover: "image/podcasts/Stoic Creative Focus.png",
-        altCover: "image/podcasts/podcast10.png",
-        src: "music/podcasts/Stoic Creative Focus.mp3",
+        cover: "image/podcasts/Stoic Creative Focus.jpeg",
+        altCover: "image/podcasts/Stoic Creative Focus.jpeg",
+        src: "music/podcasts/Stoic Creative Focus.mpeg",
         host: "Julian Thorne",
         writers: "Modern Stoic Guild",
         producers: "Ataraxia Studio"
@@ -3404,7 +3633,7 @@ function updatePodcastUI(podcast) {
     const footerTitle = document.querySelector('.player-left .track-details h4');
     const footerArtist = document.querySelector('.player-left .track-details p');
 
-    if (footerImg) footerImg.src = podcast.cover;
+    if (footerImg) footerImg.src = podcastCoverPath(podcast.title);
     if (footerTitle) footerTitle.textContent = podcast.title;
     if (footerArtist) footerArtist.textContent = podcast.artist;
 
@@ -3413,7 +3642,7 @@ function updatePodcastUI(podcast) {
     const rightTitle = document.querySelector('.now-playing-card .song-text h3');
     const rightArtist = document.querySelector('.now-playing-card .song-text p');
 
-    if (rightImg) rightImg.src = podcast.cover;
+    if (rightImg) rightImg.src = podcastCoverPath(podcast.title);
     if (rightTitle) rightTitle.textContent = podcast.title;
     if (rightArtist) rightArtist.textContent = podcast.artist;
 
@@ -3423,7 +3652,7 @@ function updatePodcastUI(podcast) {
     const artistDesc = document.querySelector('.artist-card .artist-description');
     const monthlyListeners = document.querySelector('.artist-card .monthly-listeners');
 
-    if (artistBanner) artistBanner.src = podcast.cover;
+    if (artistBanner) artistBanner.src = podcastCoverPath(podcast.title);
     if (artistTopHeader) artistTopHeader.textContent = podcast.host || podcast.artist;
     if (monthlyListeners) monthlyListeners.textContent = 'Podcast Host & Creator';
     if (artistDesc) {
@@ -3472,8 +3701,8 @@ function playPodcastAudio(podcast) {
     const trackObj = {
         title: podcast.title,
         artist: podcast.artist,
-        cover: podcast.cover,
-        audio: podcast.src,
+        cover: podcastCoverPath(podcast.title),
+        audio: podcastAudioPath(podcast.title),
         video: null
     };
 
@@ -3482,10 +3711,10 @@ function playPodcastAudio(podcast) {
 
     player.pause();
 
+    const exactAudioPath = podcastAudioPath(podcast.title);
     const candidateSources = [
-        podcast.src,
-        podcast.src.replace('music/podcasts/', 'music/'),
-        encodeURI(podcast.src)
+        exactAudioPath,
+        encodeURI(exactAudioPath)
     ];
 
     let currentSourceIdx = 0;
@@ -3552,10 +3781,10 @@ function renderEchoBeatPodcasts() {
 
         card.innerHTML = `
             <div class="podcast-card-img-wrap">
-                <img src="${podcast.cover}" 
+                <img src="${podcastCoverPath(podcast.title)}" 
                      alt="${podcast.title}" 
                      loading="lazy" 
-                     onerror="if(this.src!=='${podcast.altCover}') { this.src='${podcast.altCover}'; } else { this.onerror=null; this.src='image/podcasts/podcast${index + 1}.jpg'; }">
+                     onerror="this.onerror=null; this.style.visibility='hidden';">
                 <div class="podcast-quick-play-btn">
                     <i class="fa-solid fa-play"></i>
                 </div>
